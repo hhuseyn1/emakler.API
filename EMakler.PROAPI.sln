@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EMakler.PROAPI", "EMakler.P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLayer", "BusinessLayer\BusinessLayer.csproj", "{3D8FCEC0-3A67-4B73-BFC8-662D7C3981C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entitylayer", "Entitylayer\Entitylayer.csproj", "{3383855F-C209-4F66-A410-CCD0A7BBC8DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityLayer", "Entitylayer\EntityLayer.csproj", "{3383855F-C209-4F66-A410-CCD0A7BBC8DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{E042D3B2-3980-41BA-AD02-3645A61F10E5}"
 EndProject
