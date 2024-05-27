@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using EntityLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataAccessLayer.Entities;
+namespace DataAccessLayer.Concrete;
 
 public partial class Context : DbContext
 {
