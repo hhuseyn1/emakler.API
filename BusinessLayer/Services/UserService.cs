@@ -25,7 +25,7 @@ namespace BusinessLayer.Services
             var otpCode = GenerateOtp();
             var user = new User
             {
-                UserId = userRegistration.Id++,
+                
                 UserMail = userRegistration.Email,
                 ContactNumber = userRegistration.PhoneNumber,
                 OtpCode = otpCode
@@ -48,10 +48,9 @@ namespace BusinessLayer.Services
 
 
 
-        #region privatemethods
+        #region privatemethod
         private string GenerateOtp()
         {
-
             return new Random().Next(100000, 999999).ToString();
         }
 

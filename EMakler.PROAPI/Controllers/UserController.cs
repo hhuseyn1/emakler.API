@@ -24,7 +24,7 @@ namespace EMakler.PROAPI.Controllers
         }
 
         [HttpPost("validate-otp")]
-        public async Task<IActionResult> ValidateOtp([FromBody] string phoneNumber, string otpCode)
+        public async Task<IActionResult> ValidateOtp(/*[FromBody]*/string phoneNumber, string otpCode)
         {
             var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
             if (isValid)
@@ -33,6 +33,25 @@ namespace EMakler.PROAPI.Controllers
             }
             return BadRequest(new { Message = "Invalid OTP." });
         }
+
+        #region comments
+        //[HttpPost("register-validate")]
+        //public async Task<IActionResult> RegisterAndValidate([FromBody] UserRegistrationWithOtp model)
+        //{
+
+        //    await _userService.RegisterUser(model.UserRegistration);
+
+        //    string phoneNumber = model.UserRegistration.PhoneNumber;
+
+        //    var isValid = await _userService.ValidateOtpAsync(phoneNumber, model.OtpCode);
+
+        //    if (isValid)
+        //    {
+        //        return Ok(new { Message = "User registered and OTP validated successfully." });
+        //    }
+        //    return BadRequest(new { Message = "User registered but OTP validation failed." });
+        //}
+        #endregion
 
 
     }
