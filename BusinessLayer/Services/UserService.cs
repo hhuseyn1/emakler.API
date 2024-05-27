@@ -1,14 +1,8 @@
 ﻿using BusinessLayer.Interfaces;
 using DataAccessLayer.Concrete;
-using DataAccessLayer.Interfaces;
 using DTO.User;
 using EntityLayer.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Services
 {
@@ -25,12 +19,19 @@ namespace BusinessLayer.Services
             var otpCode = GenerateOtp();
             var user = new User
             {
-                
+
                 UserMail = userRegistration.Email,
                 ContactNumber = userRegistration.PhoneNumber,
-                OtpCode = otpCode
+                OtpCode = otpCode,
+                OtpCreatedTime = DateTime.UtcNow,
+                IsValidate=true
             };
 
+            var previousCodes = await _context.Users.Where(x => x.ContactNumber == userRegistration.PhoneNumber && x.IsValidate).ToListAsync();
+            foreach (var prevCodeUser in previousCodes)
+            {
+                prevCodeUser.IsValidate = false;
+            }
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -38,11 +39,17 @@ namespace BusinessLayer.Services
 
         public async Task<bool> ValidateOtpAsync(string contactNumber, string otpCode)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == contactNumber);
-            if (user != null && user.OtpCode == otpCode)
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.ContactNumber == contactNumber);
+            if (user != null)
             {
-                return true;
+                TimeSpan otpValidityDuration = TimeSpan.FromMinutes(5);
+
+                if (DateTime.UtcNow - user.OtpCreatedTime <= otpValidityDuration)
+                {
+                    return true;
+                }
             }
+            user.IsValidate = false;
             return false;
         }
 

@@ -12,4 +12,8 @@ public partial class User
     public string ContactNumber { get; set; } = null!;
 
     public string? OtpCode { get; set; }
+
+    public DateTime OtpCreatedTime { get; set; }
+    public bool IsValidate { get; set;}
+
 }
