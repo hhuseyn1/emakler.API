@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EntityLayer.Entities;
+namespace DataAccessLayer.Entities;
 
 public partial class Region
 {

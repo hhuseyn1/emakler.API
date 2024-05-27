@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EntityLayer.Entities;
+namespace DataAccessLayer.Entities;
 
 public partial class User
 {
@@ -11,5 +11,5 @@ public partial class User
 
     public string ContactNumber { get; set; } = null!;
 
-    public string OtpCode { get; set; } = null!;
+    public string? OtpCode { get; set; }
 }
