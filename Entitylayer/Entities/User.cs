@@ -15,5 +15,6 @@ public partial class User
 
     public DateTime OtpCreatedTime { get; set; }
     public bool IsValidate { get; set;}
+    public string UserPassword {  get; set; }
 
 }

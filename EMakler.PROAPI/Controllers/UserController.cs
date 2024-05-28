@@ -23,17 +23,6 @@ namespace EMakler.PROAPI.Controllers
 
         }
 
-        [HttpPost("validate-otp")]
-        public async Task<IActionResult> ValidateOtp(/*[FromBody]*/string phoneNumber, string otpCode)
-        {
-            var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
-            if (isValid)
-            {
-                return Ok(new { Message = "OTP validated successfully." });
-            }
-            return BadRequest(new { Message = "Invalid OTP." });
-        }
-
         #region comments
         //[HttpPost("register-validate")]
         //public async Task<IActionResult> RegisterAndValidate([FromBody] UserRegistrationWithOtp model)
@@ -51,8 +40,39 @@ namespace EMakler.PROAPI.Controllers
         //    }
         //    return BadRequest(new { Message = "User registered but OTP validation failed." });
         //}
+        // ----------------------------------
+        //[HttpPost("validate-otp")]
+        //public async Task<IActionResult> ValidateOtp(/*[FromBody]*/string phoneNumber, string otpCode)
+        //{
+        //    var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
+        //    if (isValid)
+        //    {
+        //        return Ok(new { Message = "OTP validated successfully." });
+        //    }
+        //    return BadRequest(new { Message = "Invalid OTP." });
+        //}
         #endregion
+    }
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ValidateOtpController : ControllerBase
+    {
+        private readonly IUserService _userService;
 
+        public ValidateOtpController(IUserService userService)
+        {
+            _userService = userService;
+        }
 
+        [HttpPost("validate-otp")]
+        public async Task<IActionResult> ValidateOtp([FromBody] string phoneNumber, string otpCode)
+        {
+            var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
+            if (isValid)
+            {
+                return Ok(new { Message = "OTP validated successfully." });
+            }
+            return BadRequest(new { Message = "Invalid OTP." });
+        }
     }
 }

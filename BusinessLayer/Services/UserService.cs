@@ -3,15 +3,18 @@ using DataAccessLayer.Concrete;
 using DTO.User;
 using EntityLayer.Entities;
 using Microsoft.EntityFrameworkCore;
+using OtpNet;
 
 namespace BusinessLayer.Services
 {
     public class UserService : IUserService
     {
         private readonly Context _context;
+        private readonly Totp _totp;
         public UserService(Context context)
         {
             _context = context;
+            _totp = new Totp(Base32Encoding.ToBytes("emaklerprosecret"));
         }
 
         public async Task RegisterUser(UserRegistration userRegistration)
@@ -39,7 +42,7 @@ namespace BusinessLayer.Services
 
         public async Task<bool> ValidateOtpAsync(string contactNumber, string otpCode)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.ContactNumber == contactNumber);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.ContactNumber == contactNumber&&x.IsValidate==true);
             if (user != null)
             {
                 TimeSpan otpValidityDuration = TimeSpan.FromMinutes(5);
@@ -49,7 +52,7 @@ namespace BusinessLayer.Services
                     return true;
                 }
             }
-            user.IsValidate = false;
+
             return false;
         }
 
@@ -58,7 +61,7 @@ namespace BusinessLayer.Services
         #region privatemethod
         private string GenerateOtp()
         {
-            return new Random().Next(100000, 999999).ToString();
+            return _totp.ComputeTotp();
         }
 
         #endregion
