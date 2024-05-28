@@ -9,6 +9,7 @@ namespace BusinessLayer.Interfaces
 {
     public interface IUserService
     {
+        Task<bool> AuthenticateUserAsync(string phoneNumber, string password);
         Task RegisterUser(UserRegistration userRegsitration);
         Task<bool> ValidateOtpAsync(string contactNumber, string otpCode);
 

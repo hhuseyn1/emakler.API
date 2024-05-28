@@ -377,6 +377,8 @@ public partial class Context : DbContext
             entity.Property(e => e.IsValidate)
                 .IsRequired()
                 .HasDefaultValue(false);
+            entity.Property(e => e.UserPassword)
+                .IsRequired();
 
         });
 

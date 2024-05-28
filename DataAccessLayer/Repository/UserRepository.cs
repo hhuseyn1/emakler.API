@@ -42,6 +42,7 @@ namespace DataAccessLayer.Repository
                 ContactNumber = phoneNumber,
                 OtpCode = otpCode,
                 UserMail = "",
+                UserPassword=""
             };
 
             await _context.Users.AddAsync(user);

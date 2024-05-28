@@ -17,6 +17,23 @@ namespace BusinessLayer.Services
             _totp = new Totp(Base32Encoding.ToBytes("emaklerprosecret"));
         }
 
+        public async Task<bool> AuthenticateUserAsync(string phoneNumber, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == phoneNumber);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (user.UserPassword == password)
+            {
+                return true; 
+            }
+
+            return false; 
+        }
+
         public async Task RegisterUser(UserRegistration userRegistration)
         {
             var otpCode = GenerateOtp();

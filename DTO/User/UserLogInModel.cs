@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DTO.User
 {
-    public class UserRegistrationWithOtp
+    public class UserLogInModel
     {
-        public UserRegistration UserRegistration { get; set; }
-        public string OtpCode {  get; set; }
+        public string PhoneNumber { get; set; }
+        public string Password {  get; set; }
     }
 }
