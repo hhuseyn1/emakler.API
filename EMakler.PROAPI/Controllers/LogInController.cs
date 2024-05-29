@@ -1,6 +1,5 @@
 ﻿using BusinessLayer.Interfaces;
 using DTO.User;
-using EMakler.PROAPI.Utilities;
 using EntityLayer.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -41,6 +40,61 @@ namespace EMakler.PROAPI.Controllers
             string token = GenerateJwtToken(userLogInModel.PhoneNumber); 
             return Ok("Welcome, Əmlak Bazası");
         }
+
+        //[HttpPost("forgot-password")]
+        //public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+        //{
+        //    if (string.IsNullOrEmpty(forgotPasswordModel.PhoneNumber))
+        //    {
+        //        return BadRequest("Phone number is required");
+        //    }
+
+        //    var otp = await _userService.GenerateOtpAsync(forgotPasswordModel.PhoneNumber);
+
+        //    if (string.IsNullOrEmpty(otp))
+        //    {
+        //        return BadRequest("Failed to generate Otp");
+        //    }
+
+        //    bool isSent=await _userService.SendOtpAsync(forgotPasswordModel.PhoneNumber, otp);
+
+        //    if (!isSent)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Failed to send OTP.");
+        //    }
+
+        //    return Ok("OTP has been sent to your phone number.");
+        //}
+
+
+        //[HttpPost("reset-password")]
+        //public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+        //{
+        //    if (string.IsNullOrEmpty(resetPasswordModel.PhoneNumber) || string.IsNullOrEmpty(resetPasswordModel.OtpCode) || string.IsNullOrEmpty(resetPasswordModel.NewPassword))
+        //    {
+        //        return BadRequest("Phone number, OTP code, and new password are required.");
+        //    }
+
+        //    //Validate Otp
+        //    var isOtpValid = await _userService.ValidateOtpAsync(resetPasswordModel.PhoneNumber, resetPasswordModel.OtpCode);
+
+        //    if (!isOtpValid)
+        //    {
+        //        return BadRequest("Invalid OTP code.");
+        //    }
+
+        //    //Reset Password
+        //    var isPasswordReset = await _userService.ResetPasswordAsync(resetPasswordModel.PhoneNumber, resetPasswordModel.NewPassword);
+
+        //    if (!isPasswordReset)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Failed to reset password.");
+        //    }
+
+        //    return Ok("Password has been reset successfully.");
+        //}
+
+        #region private method
         private string GenerateJwtToken(string phoneNumber)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -59,5 +113,6 @@ namespace EMakler.PROAPI.Controllers
 
             return tokenHandler.WriteToken(token);
         }
+        #endregion
     }
 }
