@@ -1,17 +1,13 @@
 ﻿using EntityLayer.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DataAccessLayer.Interfaces
+namespace DataAccessLayer.Interfaces;
+
+public interface IUserRepository
 {
-    public interface IUserRepository
-    {
-        Task AddUserAsync(User user);
-        Task SaveOtpAsync(string phoneNumber, string otpCode);
-        Task<string> GetOtpAsync(string phoneNumber);
-
-    }
+    Task AddUser(User user);
+    Task<User> GetUserByUsername(string userMail);
+    Task<User> GetUserById(Guid userId);
+    Task<User> GetUserByContactNumber(string contactNumber);
+    Task UpdateUser(User user);
+    Task DeleteUser(Guid userId);
 }

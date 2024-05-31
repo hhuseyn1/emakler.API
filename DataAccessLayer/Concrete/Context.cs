@@ -359,7 +359,7 @@ public partial class Context : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4CDE2E4347");
+            entity.HasKey(e => e.Id).HasName("PK__Users__1788CC4CDE2E4347");
 
             entity.Property(e => e.ContactNumber)
                 .HasMaxLength(13)

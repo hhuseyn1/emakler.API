@@ -1,20 +1,13 @@
 ﻿using DTO.User;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BusinessLayer.Interfaces
+namespace BusinessLayer.Interfaces;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task<bool> AuthenticateUserAsync(string phoneNumber, string password);
-        
-        Task<bool> ValidateOtpAsync(string phoneNumber, string otpCode);
-        Task RegisterUser(UserRegistration userRegistration);
-        //Task<bool> ResetPasswordAsync(string phoneNumber, string newPassword);
-        //Task<string> GenerateOtpAsync(string phoneNumber);
-        //Task<bool> SendOtpAsync(string phoneNumber, string otp);
-    }
+    Task RegisterUser(UserRegistration userRegistration);
+    Task<bool> ValidateUser(string userMail, string password);
+    Task SendOtp(string contactNumber);
+    Task<bool> VerifyOtp(string contactNumber, string otpCode);
+    Task UpdateUser(Guid userId, UserRegistration userRegistration);
+    Task DeleteUser(Guid userId);
 }

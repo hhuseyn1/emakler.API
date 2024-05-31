@@ -1,136 +1,133 @@
 ﻿using BusinessLayer.Interfaces;
-using DataAccessLayer.Concrete;
+using DataAccessLayer.Interfaces;
 using DTO.User;
 using EntityLayer.Entities;
-using Microsoft.EntityFrameworkCore;
-using OtpNet;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using System.Text;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
-namespace BusinessLayer.Services
+namespace BusinessLayer.Services;
+
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
+    private static ConcurrentDictionary<string, string> _otpStore = new ConcurrentDictionary<string, string>();
+
+    public UserService(IUserRepository userRepository, IConfiguration configuration)
     {
-        private readonly Context _context;
-        private readonly Totp _totp;
-        public UserService(Context context)
+        _userRepository = userRepository;
+        _configuration = configuration;
+
+        var accountSid = _configuration["Twilio:AccountSid"];
+        var authToken = _configuration["Twilio:AuthToken"];
+        TwilioClient.Init(accountSid, authToken);
+    }
+
+    public async Task RegisterUser(UserRegistration userRegistration)
+    {
+        var user = new User
         {
-            _context = context;
-            _totp = new Totp(Base32Encoding.ToBytes("emaklerprosecret"));
-        }
+            Id = Guid.NewGuid(),
+            UserMail = userRegistration.UserMail,
+            ContactNumber = userRegistration.ContactNumber,
+            UserPassword = userRegistration.UserPassword, 
+            IsValidate = false
+        };
 
-        public async Task<bool> AuthenticateUserAsync(string phoneNumber, string password)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == phoneNumber);
+        CreatePasswordHash(userRegistration.UserPassword, out byte[] passwordHash, out byte[] passwordSalt);
+        user.PasswordHash = passwordHash;
+        user.PasswordSalt = passwordSalt;
 
-            if (user == null)
-            {
-                return false;
-            }
+        await _userRepository.AddUser(user);
+    }
 
-            if (VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-            {
-                return true;
-            }
-
-            return false; 
-        }
-
-        //public async Task<string> GenerateOtpAsync(string phoneNumber)
-        //{
-        //    var otp = GenerateOtp();
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == phoneNumber);
-
-        //    if (user != null)
-        //    {
-        //        user.OtpCode = otp;
-        //        user.OtpCreatedTime = DateTime.UtcNow;
-        //        await _context.SaveChangesAsync();
-        //        return otp;
-        //    }
-
-        //    return null;
-        //}
-
-        public async Task RegisterUser(UserRegistration userRegistration)
-        {
-            var otpCode = GenerateOtp();
-            var user = new User
-            {
-
-                UserMail = userRegistration.Email,
-                ContactNumber = userRegistration.PhoneNumber,
-                OtpCode = otpCode,
-                OtpCreatedTime = DateTime.UtcNow,
-                IsValidate=true
-            };
-
-            var previousCodes = await _context.Users.Where(x => x.ContactNumber == userRegistration.PhoneNumber && x.IsValidate).ToListAsync();
-            foreach (var prevCodeUser in previousCodes)
-            {
-                prevCodeUser.IsValidate = false;
-            }
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-        }
-
-        //public async Task<bool> ResetPasswordAsync(string phoneNumber, string newPassword)
-        //{
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == phoneNumber);
-        //    if (user == null)
-        //    {
-        //        return false;
-        //    }
-
-        //    using var hmac = new HMACSHA512();
-        //    user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(newPassword));
-        //    user.PasswordSalt = hmac.Key;
-
-        //    _context.Users.Update(user);
-        //    await _context.SaveChangesAsync();
-        //    return true;
-        //}
-
-        //public Task<bool> SendOtpAsync(string phoneNumber, string otp)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        public async Task<bool> ValidateOtpAsync(string contactNumber, string otpCode)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.ContactNumber == contactNumber&&x.IsValidate==true);
-            if (user != null)
-            {
-                TimeSpan otpValidityDuration = TimeSpan.FromMinutes(5);
-
-                if (DateTime.UtcNow - user.OtpCreatedTime <= otpValidityDuration)
-                {
-                    return true;
-                }
-            }
-
+    public async Task<bool> ValidateUser(string userMail, string password)
+    {
+        var user = await _userRepository.GetUserByUsername(userMail);
+        if (user == null)
             return false;
-        }
 
+        return VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
+    }
 
-
-        #region privatemethod
-        private string GenerateOtp()
+    public async Task SendOtp(string contactNumber)
+    {
+        var otp = new Random().Next(100000, 999999).ToString();
+        var user = await _userRepository.GetUserByContactNumber(contactNumber);
+        if (user != null)
         {
-            return _totp.ComputeTotp();
+            user.OtpCode = otp;
+            user.OtpCreatedTime = DateTime.UtcNow;
+            await _userRepository.UpdateUser(user);
         }
 
-        //private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-        //{
-        //    using (var hmac = new HMACSHA512(storedSalt))
-        //    {
-        //        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        //        return computedHash.SequenceEqual(storedHash);
-        //    }
-        //}
+        var fromPhoneNumber = _configuration["Twilio:PhoneNumber"];
 
-        #endregion
+        var message = await MessageResource.CreateAsync(
+            body: $"Your OTP code is {otp}",
+            from: new PhoneNumber(fromPhoneNumber),
+            to: new PhoneNumber(contactNumber)
+        );
+    }
 
+    public async Task<bool> VerifyOtp(string contactNumber, string otpCode)
+    {
+        var user = await _userRepository.GetUserByContactNumber(contactNumber);
+        if (user == null || user.OtpCode != otpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
+            return false;
+
+        user.IsValidate = true;
+        user.OtpCode = null;
+        user.OtpCreatedTime = DateTime.MinValue;
+        await _userRepository.UpdateUser(user);
+        return true;
+    }
+
+    public async Task UpdateUser(Guid userId, UserRegistration userRegistration)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user != null)
+        {
+            user.UserMail = userRegistration.UserMail;
+            user.ContactNumber = userRegistration.ContactNumber;
+            user.UserPassword = userRegistration.UserPassword; 
+
+            CreatePasswordHash(userRegistration.UserPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+
+            await _userRepository.UpdateUser(user);
+        }
+    }
+
+    public async Task DeleteUser(Guid userId)
+    {
+        await _userRepository.DeleteUser(userId);
+    }
+
+    private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512())
+        {
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        }
+    }
+
+    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    {
+        using (var hmac = new HMACSHA512(storedSalt))
+        {
+            var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            for (int i = 0; i < computedHash.Length; i++)
+            {
+                if (computedHash[i] != storedHash[i]) return false;
+            }
+        }
+        return true;
     }
 }

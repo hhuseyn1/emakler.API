@@ -2,11 +2,6 @@
 using DataAccessLayer.Interfaces;
 using EntityLayer.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repository
 {
@@ -19,35 +14,41 @@ namespace DataAccessLayer.Repository
             _context = context;
         }
 
-        public async Task AddUserAsync(User user)
+        public async Task AddUser(User user)
         {
-            await _context.Users.AddAsync(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<string> GetOtpAsync(string phoneNumber)
+        public async Task<User> GetUserByUsername(string userMail)
         {
-            var otpEntity = await _context.Users.Where(x => x.ContactNumber == phoneNumber)
-                .OrderByDescending(o => o.UserId)
-                .FirstOrDefaultAsync();
-
-            return otpEntity?.OtpCode;
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserMail == userMail);
         }
 
-        public async Task SaveOtpAsync(string phoneNumber, string otpCode)
+        public async Task<User> GetUserById(Guid userId)
         {
-            var user = new User
+            return await _context.Users.FindAsync(userId);
+        }
+
+        public async Task<User> GetUserByContactNumber(string contactNumber)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.ContactNumber == contactNumber);
+        }
+
+        public async Task UpdateUser(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUser(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
             {
-                UserId = 1,
-                ContactNumber = phoneNumber,
-                OtpCode = otpCode,
-                UserMail = "",
-                UserPassword=""
-            };
-
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
-
     }
 }

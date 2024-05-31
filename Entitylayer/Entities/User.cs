@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class User
 {
-    public int UserId { get; set; }
+    public Guid Id { get; set; }
 
     public string UserMail { get; set; } = null!;
 

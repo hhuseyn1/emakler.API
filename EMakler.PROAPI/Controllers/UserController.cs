@@ -1,7 +1,10 @@
 ﻿using BusinessLayer.Interfaces;
 using DTO.User;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace EMakler.PROAPI.Controllers
 {
@@ -10,69 +13,77 @@ namespace EMakler.PROAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IConfiguration _configuration;
+
+        public UserController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegistration userRegistration)
         {
             await _userService.RegisterUser(userRegistration);
-            return Ok(new { Message = "User registered successfully. OTP sent to phone number." });
 
-        }
-
-        #region comments
-        //[HttpPost("register-validate")]
-        //public async Task<IActionResult> RegisterAndValidate([FromBody] UserRegistrationWithOtp model)
-        //{
-
-        //    await _userService.RegisterUser(model.UserRegistration);
-
-        //    string phoneNumber = model.UserRegistration.PhoneNumber;
-
-        //    var isValid = await _userService.ValidateOtpAsync(phoneNumber, model.OtpCode);
-
-        //    if (isValid)
-        //    {
-        //        return Ok(new { Message = "User registered and OTP validated successfully." });
-        //    }
-        //    return BadRequest(new { Message = "User registered but OTP validation failed." });
-        //}
-        // ----------------------------------
-        //[HttpPost("validate-otp")]
-        //public async Task<IActionResult> ValidateOtp(/*[FromBody]*/string phoneNumber, string otpCode)
-        //{
-        //    var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
-        //    if (isValid)
-        //    {
-        //        return Ok(new { Message = "OTP validated successfully." });
-        //    }
-        //    return BadRequest(new { Message = "Invalid OTP." });
-        //}
-        #endregion
-    }
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ValidateOtpController : ControllerBase
-    {
-        private readonly IUserService _userService;
-
-        public ValidateOtpController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        [HttpPost("validate-otp")]
-        public async Task<IActionResult> ValidateOtp([FromBody] string phoneNumber, string otpCode)
-        {
-            var isValid = await _userService.ValidateOtpAsync(phoneNumber, otpCode);
-            if (isValid)
+            try
             {
-                return Ok(new { Message = "OTP validated successfully." });
+                await _userService.SendOtp(userRegistration.ContactNumber);
+                return Ok(new { Message = "User registered successfully. OTP sent to phone number." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Failed to send OTP: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp(UserVerificationRequest request)
+        {
+            if (await _userService.VerifyOtp(request.ContactNumber, request.OtpCode))
+            {
+                return Ok(new { Message = "OTP verified successfully." });
             }
             return BadRequest(new { Message = "Invalid OTP." });
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginRequest request)
+        {
+            if (await _userService.ValidateUser(request.UserMail, request.UserPassword))
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["Identity:Secret"]);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.Name, request.UserMail)
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                return Ok(new UserLoginResponse { Token = tokenString });
+            }
+
+            return Unauthorized(new { Message = "Invalid username or password." });
+        }
+
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUser(Guid userId, UserRegistration userRegistration)
+        {
+            await _userService.UpdateUser(userId, userRegistration);
+            return Ok(new { Message = "User updated successfully." });
+        }
+
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
+        {
+            await _userService.DeleteUser(userId);
+            return Ok(new { Message = "User deleted successfully." });
         }
     }
 }
