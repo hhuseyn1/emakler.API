@@ -5,6 +5,7 @@ using EntityLayer.Entities;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Text;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
@@ -42,12 +43,12 @@ public class UserService : IUserService
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
-        await _userRepository.AddUser(user);
+        await _userRepository.AddUserAsync(user);
     }
 
     public async Task<bool> ValidateUser(string userMail, string password)
     {
-        var user = await _userRepository.GetUserByUsername(userMail);
+        var user = await _userRepository.GetUserByUsernameAsync(userMail);
         if (user == null)
             return false;
 
@@ -57,12 +58,12 @@ public class UserService : IUserService
     public async Task SendOtp(string contactNumber)
     {
         var otp = new Random().Next(100000, 999999).ToString();
-        var user = await _userRepository.GetUserByContactNumber(contactNumber);
+        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
         if (user != null)
         {
             user.OtpCode = otp;
             user.OtpCreatedTime = DateTime.UtcNow;
-            await _userRepository.UpdateUser(user);
+            await _userRepository.UpdateUserAsync(user);
         }
 
         var fromPhoneNumber = _configuration["Twilio:PhoneNumber"];
@@ -76,20 +77,20 @@ public class UserService : IUserService
 
     public async Task<bool> VerifyOtp(string contactNumber, string otpCode)
     {
-        var user = await _userRepository.GetUserByContactNumber(contactNumber);
+        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
         if (user == null || user.OtpCode != otpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
             return false;
 
         user.IsValidate = true;
         user.OtpCode = null;
         user.OtpCreatedTime = DateTime.MinValue;
-        await _userRepository.UpdateUser(user);
+        await _userRepository.UpdateUserAsync(user);
         return true;
     }
 
     public async Task UpdateUser(Guid userId, UserRegistration userRegistration)
     {
-        var user = await _userRepository.GetUserById(userId);
+        var user = await _userRepository.GetUserByIdAsync(userId);
         if (user != null)
         {
             user.UserMail = userRegistration.UserMail;
@@ -100,13 +101,13 @@ public class UserService : IUserService
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-            await _userRepository.UpdateUser(user);
+            await _userRepository.UpdateUserAsync(user);
         }
     }
 
     public async Task DeleteUser(Guid userId)
     {
-        await _userRepository.DeleteUser(userId);
+        await _userRepository.DeleteUserAsync(userId);
     }
 
     private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -129,5 +130,31 @@ public class UserService : IUserService
             }
         }
         return true;
+    }
+
+    public async Task<bool> RequestPasswordReset(string phoneNumber)
+    {
+        var user = await _userRepository.GetUserByContactNumberAsync(phoneNumber);
+        if (user != null)
+        {
+            await SendOtp(phoneNumber);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> ConfirmPasswordReset(ConfirmResetPasswordRequest request)
+    {
+        var user = await _userRepository.GetUserByContactNumberAsync(request.PhoneNumber);
+        if (user != null && user.OtpCode == request.OtpCode && (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes <= 5)
+        {
+            using var hmac = new HMACSHA512();
+            user.PasswordSalt = hmac.Key;
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword));
+            user.OtpCode = null;
+            await _userRepository.UpdateUserAsync(user);
+            return true;
+        }
+        return false;
     }
 }

@@ -10,4 +10,6 @@ public interface IUserService
     Task<bool> VerifyOtp(string contactNumber, string otpCode);
     Task UpdateUser(Guid userId, UserRegistration userRegistration);
     Task DeleteUser(Guid userId);
+    Task<bool> RequestPasswordReset(string phoneNumber);
+    Task<bool> ConfirmPasswordReset(ConfirmResetPasswordRequest request);
 }

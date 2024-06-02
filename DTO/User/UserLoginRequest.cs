@@ -1,4 +1,4 @@
-﻿    namespace DTO.User;
+﻿namespace DTO.User;
 
 public class UserLoginRequest
 {

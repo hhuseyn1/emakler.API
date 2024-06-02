@@ -1,6 +1,6 @@
 ﻿namespace DTO.User;
 
-public class ResetPasswordModel
+public class ConfirmResetPasswordRequest
 {
     public string PhoneNumber { get; set; }
     public string OtpCode {  get; set; }
