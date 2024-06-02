@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EmaklerPRO")));
 
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();

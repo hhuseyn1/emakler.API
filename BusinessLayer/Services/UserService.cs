@@ -119,6 +119,7 @@ public class UserService : IUserService
         }
     }
 
+
     private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
         using (var hmac = new HMACSHA512(storedSalt))
