@@ -20,7 +20,23 @@ builder.Services.AddDbContext<Context>(options =>
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 
+
+
 var secret = builder.Configuration["Identity:Secret"];
+var kafkaBootstrapServers = builder.Configuration["Kafka:BootstrapServers"];
+var kafkaTopic = builder.Configuration["Kafka:Topic"];
+var kafkaGroupId = builder.Configuration["Kafka:GroupId"];
+
+builder.Services.AddScoped<IProducerKafkaService>(provider=>
+new ProducerKafkaService(kafkaBootstrapServers,kafkaTopic,
+           provider.GetRequiredService<ILogger<ProducerKafkaService>>()));
+
+builder.Services.AddScoped<IConsumerKafkaService>(provider =>
+new ConsumerKafkaService(kafkaBootstrapServers, kafkaTopic,kafkaGroupId,
+                         provider.GetRequiredService<ILogger<ConsumerKafkaService>>()));
+
+//builder.Services.AddSingleton<IConsumerKafkaService, ConsumerKafkaService>();
+
 if (string.IsNullOrEmpty(secret))
 {
     throw new ArgumentNullException("Identity:Secret", "JWT Secret is not configured");

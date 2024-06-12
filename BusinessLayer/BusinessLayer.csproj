@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.4.0" />
     <PackageReference Include="Otp.NET" Version="1.4.0" />
     <PackageReference Include="Twilio" Version="7.1.0" />
   </ItemGroup>
