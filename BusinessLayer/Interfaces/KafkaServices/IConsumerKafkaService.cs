@@ -2,5 +2,5 @@
 
 public interface IConsumerKafkaService
 {
-    void Consume(CancellationToken cancellationToken);
+    Task ConsumeAsync(CancellationToken cancellationToken);
 }

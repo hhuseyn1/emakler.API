@@ -2,5 +2,5 @@
 
 public interface IProducerKafkaService
 {
-    Task Produce(string key, string value);
+    Task ProduceAsync(string key, string value);
 }

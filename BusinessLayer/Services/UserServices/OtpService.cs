@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces;
+﻿using BusinessLayer.Interfaces.UserServices;
 using DataAccessLayer.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
@@ -6,7 +6,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace BusinessLayer.Services;
+namespace BusinessLayer.Services.UserServices;
 
 public class OtpService : IOtpService
 {

@@ -17,6 +17,8 @@ public partial class Context : DbContext
 
     }
 
+    public virtual DbSet<Building> Buildings { get; set; }
+    public virtual DbSet<BuildingPost> BuildingPosts { get; set; }
     public virtual DbSet<BuildingType> BuildingTypes { get; set; }
 
     public virtual DbSet<Document> Documents { get; set; }

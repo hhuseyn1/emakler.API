@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
 using BusinessLayer.Interfaces.KafkaServices;
+using BusinessLayer.Interfaces.UserServices;
 using DTO.User;
 using EMakler.PROAPI.Configurations;
 using Microsoft.AspNetCore.Identity.Data;
@@ -45,7 +46,7 @@ public class AuthController : ControllerBase
         try
         {
             await _userService.RegisterUser(userRegistration);
-            _logger.LogInformation($"User registered successfully with email: {userRegistration.UserMail}");
+            _logger.LogInformation($"User registered successfully with email: {userRegistration.Email}");
             return Ok(new { Message = "User registered successfully. OTP sent to phone number." });
         }
         catch (ArgumentException ex)

@@ -19,7 +19,7 @@ public class ConsumerKafkaService : IConsumerKafkaService
         _logger = logger;
     }
 
-    public void Consume(CancellationToken cancellationToken)
+    public async Task ConsumeAsync(CancellationToken cancellationToken)
     {
         var config = new ConsumerConfig
         {
@@ -28,28 +28,26 @@ public class ConsumerKafkaService : IConsumerKafkaService
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
 
-        using (var consumer = new ConsumerBuilder<string, string>(config).Build())
-        {
-            consumer.Subscribe(_topic);
+        using var consumer = new ConsumerBuilder<string, string>(config).Build();
+        consumer.Subscribe(_topic);
 
-            try
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var consumeResult = consumer.Consume(cancellationToken);
-                    _logger.LogInformation("Message: {Message}, Key: {Key}, Topic: {Topic}, Partition: {Partition}, Offset: {Offset}",
-                        consumeResult.Message.Value, consumeResult.Message.Key, consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
-                }
+                var consumeResult = consumer.Consume(cancellationToken);
+                _logger.LogInformation("Message: {Message}, Key: {Key}, Topic: {Topic}, Partition: {Partition}, Offset: {Offset}",
+                    consumeResult.Message.Value, consumeResult.Message.Key, consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
             }
-            catch (OperationCanceledException)
-            {
-                consumer.Close();
-                _logger.LogInformation("Consumer operation cancelled.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while consuming messages.");
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            consumer.Close();
+            _logger.LogInformation("Consumer operation cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while consuming messages.");
         }
     }
 }

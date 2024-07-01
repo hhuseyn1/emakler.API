@@ -1,6 +1,6 @@
 ﻿using DTO.User;
 
-namespace BusinessLayer.Interfaces;
+namespace BusinessLayer.Interfaces.UserServices;
 
 public interface IAuthService
 {

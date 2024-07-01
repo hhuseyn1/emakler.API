@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces;
+﻿using BusinessLayer.Interfaces.UserServices;
 using DataAccessLayer.Interfaces;
 using DTO.User;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace EMakler.PROAPI.Services;
+namespace BusinessLayer.Services.UserServices;
 
 public class AuthService : IAuthService
 {
