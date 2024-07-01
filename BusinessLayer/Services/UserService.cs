@@ -1,113 +1,131 @@
 ﻿using BusinessLayer.Interfaces;
+using BusinessLayer.Interfaces.KafkaServices;
 using DataAccessLayer.Interfaces;
 using DTO.User;
 using EntityLayer.Entities;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
-using Twilio.Types;
 
 namespace BusinessLayer.Services;
 
 public class UserService : IUserService
 {
+    private readonly IOtpService _otpService;
     private readonly IUserRepository _userRepository;
-    private readonly IConfiguration _configuration;
-    private static ConcurrentDictionary<string, string> _otpStore = new ConcurrentDictionary<string, string>();
+    private readonly ILogger<UserService> _logger;
+    private readonly IProducerKafkaService _producerKafkaService;
 
-    public UserService(IUserRepository userRepository, IConfiguration configuration)
+    public UserService(
+        IOtpService otpService,
+        IUserRepository userRepository,
+        ILogger<UserService> logger,
+        IProducerKafkaService producerKafkaService)
     {
+        _otpService = otpService;
         _userRepository = userRepository;
-        _configuration = configuration;
-
-        var accountSid = _configuration["Twilio:AccountSid"];
-        var authToken = _configuration["Twilio:AuthToken"];
-        TwilioClient.Init(accountSid, authToken);
+        _logger = logger;
+        _producerKafkaService = producerKafkaService;
     }
 
     public async Task RegisterUser(UserRegistration userRegistration)
     {
+        // Check if the user already exists
+        var existingUser = await _userRepository.GetUserByUsernameAsync(userRegistration.Email);
+        if (existingUser != null)
+            throw new ArgumentException("User already exists with this email.");
+
+        // Create a new user
         var user = new User
         {
             Id = Guid.NewGuid(),
-            UserMail = userRegistration.UserMail,
+            UserMail = userRegistration.Email,
             ContactNumber = userRegistration.ContactNumber,
-            UserPassword = userRegistration.UserPassword, 
+            UserPassword = userRegistration.Password,
             IsValidate = false
         };
 
-        CreatePasswordHash(userRegistration.UserPassword, out byte[] passwordHash, out byte[] passwordSalt);
+        // Hash the password
+        CreatePasswordHash(userRegistration.Password, out byte[] passwordHash, out byte[] passwordSalt);
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
+        // Add the user to the repository
         await _userRepository.AddUserAsync(user);
-    }
 
-    public async Task<bool> ValidateUser(string userMail, string password)
-    {
-        var user = await _userRepository.GetUserByUsernameAsync(userMail);
-        if (user == null)
-            return false;
+        // Send OTP to the user's contact number
+        await _otpService.SendOtpAsync(userRegistration.ContactNumber);
 
-        return VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
-    }
+        // Produce an event to Kafka
+        await _producerKafkaService.Produce("UserRegistered", userRegistration.ContactNumber);
 
-    public async Task SendOtp(string contactNumber)
-    {
-        var otp = new Random().Next(100000, 999999).ToString();
-        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
-        if (user != null)
-        {
-            user.OtpCode = otp;
-            user.OtpCreatedTime = DateTime.UtcNow;
-            await _userRepository.UpdateUserAsync(user);
-        }
-
-        var fromPhoneNumber = _configuration["Twilio:PhoneNumber"];
-
-        var message = await MessageResource.CreateAsync(
-            body: $"Your OTP code is {otp}",
-            from: new PhoneNumber(fromPhoneNumber),
-            to: new PhoneNumber(contactNumber)
-        );
-    }
-
-    public async Task<bool> VerifyOtp(string contactNumber, string otpCode)
-    {
-        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
-        if (user == null || user.OtpCode != otpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
-            return false;
-
-        user.IsValidate = true;
-        user.OtpCode = null;
-        user.OtpCreatedTime = DateTime.MinValue;
-        await _userRepository.UpdateUserAsync(user);
-        return true;
+        // Log the registration
+        _logger.LogInformation($"User registered successfully with email: {userRegistration.Email}");
     }
 
     public async Task UpdateUser(Guid userId, UserRegistration userRegistration)
     {
+        // Check if the user exists
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user != null)
-        {
-            user.UserMail = userRegistration.UserMail;
-            user.ContactNumber = userRegistration.ContactNumber;
-            user.UserPassword = userRegistration.UserPassword; 
+        if (user == null)
+            throw new ArgumentException("User does not exist.");
 
-            CreatePasswordHash(userRegistration.UserPassword, out byte[] passwordHash, out byte[] passwordSalt);
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+        // Update user details
+        user.UserMail = userRegistration.Email;
+        user.ContactNumber = userRegistration.ContactNumber;
+        user.UserPassword = userRegistration.Password;
 
-            await _userRepository.UpdateUserAsync(user);
-        }
+        // Hash the new password
+        CreatePasswordHash(userRegistration.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        user.PasswordHash = passwordHash;
+        user.PasswordSalt = passwordSalt;
+
+        // Update the user in the repository
+        await _userRepository.UpdateUserAsync(user);
+
+        // Produce an event to Kafka
+        await _producerKafkaService.Produce("UserUpdated", userId.ToString());
+
+        // Log the update
+        _logger.LogInformation($"User updated successfully with ID: {userId}");
     }
 
     public async Task DeleteUser(Guid userId)
     {
+        // Check if the user exists
+        var user = await _userRepository.GetUserByIdAsync(userId);
+        if (user == null)
+            throw new ArgumentException("User does not exist.");
+
+        // Delete the user
         await _userRepository.DeleteUserAsync(userId);
+
+        // Produce an event to Kafka
+        await _producerKafkaService.Produce("UserDeleted", userId.ToString());
+
+        // Log the deletion
+        _logger.LogInformation($"User deleted successfully with ID: {userId}");
+    }
+
+    public async Task<User> GetUserByMailAsync(string userMail)
+    {
+        return await _userRepository.GetUserByUsernameAsync(userMail);
+    }
+
+    public async Task<User> GetUserByContactNumberAsync(string contactNumber)
+    {
+        return await _userRepository.GetUserByContactNumberAsync(contactNumber);
+    }
+
+    public async Task<bool> ValidateUser(string userMail, string password)
+    {
+        // Get the user by mail
+        var user = await _userRepository.GetUserByUsernameAsync(userMail);
+        if (user == null)
+            return false;
+
+        // Verify the password
+        return VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
     }
 
     private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -115,47 +133,16 @@ public class UserService : IUserService
         using (var hmac = new HMACSHA512())
         {
             passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
         }
     }
-
 
     private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
         using (var hmac = new HMACSHA512(storedSalt))
         {
-            var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != storedHash[i]) return false;
-            }
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return computedHash.SequenceEqual(storedHash);
         }
-        return true;
-    }
-
-    public async Task<bool> RequestPasswordReset(string phoneNumber)
-    {
-        var user = await _userRepository.GetUserByContactNumberAsync(phoneNumber);
-        if (user != null)
-        {
-            await SendOtp(phoneNumber);
-            return true;
-        }
-        return false;
-    }
-
-    public async Task<bool> ConfirmPasswordReset(ConfirmResetPasswordRequest request)
-    {
-        var user = await _userRepository.GetUserByContactNumberAsync(request.PhoneNumber);
-        if (user != null && user.OtpCode == request.OtpCode && (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes <= 5)
-        {
-            using var hmac = new HMACSHA512();
-            user.PasswordSalt = hmac.Key;
-            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword));
-            user.OtpCode = null;
-            await _userRepository.UpdateUserAsync(user);
-            return true;
-        }
-        return false;
     }
 }

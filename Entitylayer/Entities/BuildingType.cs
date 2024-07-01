@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class BuildingType
 {
-    public int IdBuildingType { get; set; }
+    public Guid IdBuildingType { get; set; }
 
     public string? BuildingTypeName { get; set; }
 

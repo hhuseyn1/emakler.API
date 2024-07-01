@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class OperationType
 {
-    public int IdOperationType { get; set; }
+    public Guid IdOperationType { get; set; }
 
     public string? OperationTypeName { get; set; }
 

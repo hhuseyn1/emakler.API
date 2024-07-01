@@ -1,4 +1,4 @@
-﻿namespace BusinessLayer.Interfaces;
+﻿namespace BusinessLayer.Interfaces.KafkaServices;
 
 public interface IConsumerKafkaService
 {

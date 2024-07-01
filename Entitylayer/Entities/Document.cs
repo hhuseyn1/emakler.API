@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class Document
 {
-    public int IdDocument { get; set; }
+    public Guid IdDocument { get; set; }
 
     public string? DocumentName { get; set; }
 

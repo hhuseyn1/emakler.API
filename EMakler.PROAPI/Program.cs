@@ -1,11 +1,15 @@
 using BusinessLayer.Interfaces;
+using BusinessLayer.Interfaces.KafkaServices;
 using BusinessLayer.Services;
+using BusinessLayer.Services.KafkaServices;
 using DataAccessLayer.Concrete;
 using DataAccessLayer.Interfaces;
 using DataAccessLayer.Repository;
 using EMakler.PROAPI.Configurations;
+using EMakler.PROAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -17,7 +21,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure strongly typed settings objects
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Identity"));
+builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafka"));
 
 // Register the database context
 builder.Services.AddDbContext<Context>(options =>
@@ -25,23 +30,27 @@ builder.Services.AddDbContext<Context>(options =>
 
 // Register services and repositories
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IOtpService, OtpService>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 
 // Kafka configuration
-var kafkaBootstrapServers = builder.Configuration["Kafka:BootstrapServers"];
-var kafkaTopic = builder.Configuration["Kafka:Topic"];
-var kafkaGroupId = builder.Configuration["Kafka:GroupId"];
-
 builder.Services.AddScoped<IProducerKafkaService>(provider =>
-    new ProducerKafkaService(kafkaBootstrapServers, kafkaTopic,
-        provider.GetRequiredService<ILogger<ProducerKafkaService>>()));
+{
+    var kafkaSettings = provider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+    return new ProducerKafkaService(kafkaSettings.BrokerUrl, kafkaSettings.TopicName,
+        provider.GetRequiredService<ILogger<ProducerKafkaService>>());
+});
 
 builder.Services.AddScoped<IConsumerKafkaService>(provider =>
-    new ConsumerKafkaService(kafkaBootstrapServers, kafkaTopic, kafkaGroupId,
-        provider.GetRequiredService<ILogger<ConsumerKafkaService>>()));
+{
+    var kafkaSettings = provider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+    return new ConsumerKafkaService(kafkaSettings.BrokerUrl, kafkaSettings.TopicName, kafkaSettings.GroupId,
+        provider.GetRequiredService<ILogger<ConsumerKafkaService>>());
+});
 
 // Configure JWT authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+var jwtSettings = builder.Configuration.GetSection("Identity").Get<JwtSettings>();
 
 if (string.IsNullOrEmpty(jwtSettings.Secret))
 {

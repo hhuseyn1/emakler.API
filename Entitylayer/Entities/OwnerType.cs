@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class OwnerType
 {
-    public int IdOwnerType { get; set; }
+    public Guid IdOwnerType { get; set; }
 
     public string? OwnerTypeName { get; set; }
 

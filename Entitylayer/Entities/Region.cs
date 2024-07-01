@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class Region
 {
-    public int? IdRegion { get; set; }
+    public Guid? IdRegion { get; set; }
 
     public string? RegionCode { get; set; }
 

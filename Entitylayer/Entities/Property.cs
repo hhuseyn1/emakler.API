@@ -5,27 +5,27 @@ namespace EntityLayer.Entities;
 
 public partial class Property
 {
-    public int IdProperty { get; set; }
+    public Guid IdProperty { get; set; }
 
-    public int? FkIdSource { get; set; }
+    public Guid? FkIdSource { get; set; }
 
-    public int? FkIdLink { get; set; }
+    public Guid? FkIdLink { get; set; }
 
     public string? Code { get; set; }
 
-    public int? FkIdPropertyType { get; set; }
+    public Guid? FkIdPropertyType { get; set; }
 
-    public int? FkIdOperationType { get; set; }
+    public Guid? FkIdOperationType { get; set; }
 
-    public int? FkIdCity { get; set; }
+    public Guid? FkIdCity { get; set; }
 
     public string? Address { get; set; }
 
-    public int? FkIdDocument { get; set; }
+    public Guid? FkIdDocument { get; set; }
 
     public double? Price { get; set; }
 
-    public int? FkIdCurrency { get; set; }
+    public Guid? FkIdCurrency { get; set; }
 
     public string? Data { get; set; }
 
@@ -37,9 +37,9 @@ public partial class Property
 
     public int? FloorOf { get; set; }
 
-    public int? FkIdRoom { get; set; }
+    public Guid? FkIdRoom { get; set; }
 
-    public int? FkIdBuildingType { get; set; }
+    public Guid? FkIdBuildingType { get; set; }
 
     public double? UnitPrice { get; set; }
 
@@ -55,7 +55,7 @@ public partial class Property
 
     public string? CpPhoneNumber03 { get; set; }
 
-    public int? FkIdOwnerType { get; set; }
+    public Guid? FkIdOwnerType { get; set; }
 
     public string? Images { get; set; }
 
@@ -65,13 +65,13 @@ public partial class Property
 
     public string? UploadMessage { get; set; }
 
-    public int? FkIdMetro { get; set; }
+    public Guid? FkIdMetro { get; set; }
 
     public int? ApprovmentStatus { get; set; }
 
     public string? ApprovmentMessage { get; set; }
 
-    public int? FkIdRepair { get; set; }
+    public Guid? FkIdRepair { get; set; }
 
-    public int? FkIdTarget { get; set; }
+    public Guid? FkIdTarget { get; set; }
 }

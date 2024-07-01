@@ -1,8 +1,18 @@
-﻿namespace DTO.User;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DTO.User;
 
 public class UserRegistration
 {
-    public string UserMail { get; set; }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
+
+    [Required]
+    [Phone]
     public string ContactNumber { get; set; }
-    public string UserPassword { get; set; }
+
+    [Required]
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
 }

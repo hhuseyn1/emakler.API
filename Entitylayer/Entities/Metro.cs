@@ -5,11 +5,11 @@ namespace EntityLayer.Entities;
 
 public partial class Metro
 {
-    public int IdMetro { get; set; }
+    public Guid IdMetro { get; set; }
 
     public string? MetroName { get; set; }
 
-    public int? FkIdRegion { get; set; }
+    public Guid? FkIdRegion { get; set; }
 
     public string? Keyword01 { get; set; }
 

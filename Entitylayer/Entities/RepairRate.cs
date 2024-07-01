@@ -5,7 +5,7 @@ namespace EntityLayer.Entities;
 
 public partial class RepairRate
 {
-    public int IdRepairRate { get; set; }
+    public Guid IdRepairRate { get; set; }
 
     public string? RepairRateName { get; set; }
 
