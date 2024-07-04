@@ -16,17 +16,20 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly ILogger<UserService> _logger;
     private readonly IProducerKafkaService _produceKafkaService;
+    private readonly IAuthService _authService;
 
     public UserService(
         IOtpService otpService,
         IUserRepository userRepository,
         ILogger<UserService> logger,
-        IProducerKafkaService produceKafkaService)
+        IProducerKafkaService produceKafkaService,
+        IAuthService authService)
     {
         _otpService = otpService;
         _userRepository = userRepository;
         _logger = logger;
         _produceKafkaService = produceKafkaService;
+        _authService = authService;
     }
 
     public async Task RegisterUser(UserRegistration userRegistration)
@@ -129,5 +132,39 @@ public class UserService : IUserService
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             return computedHash.SequenceEqual(storedHash);
         }
+    }
+
+    public async Task ConfirmEmail(Guid userId)
+    {
+        var user = await _userRepository.GetUserByIdAsync(userId);
+        if (user == null)
+            throw new ArgumentException("User does not exist.");
+
+        await _userRepository.UpdateUserAsync(user);
+
+        await _produceKafkaService.ProduceAsync("EmailConfirmed", userId.ToString());
+
+        _logger.LogInformation($"User email confirmed successfully with ID: {userId}");
+    }
+
+    public async Task ChangePassword(ChangePasswordRequest request)
+    {
+        var user = await _userRepository.GetUserByIdAsync(request.UserId);
+        if (user == null)
+            throw new ArgumentException("User does not exist.");
+
+        if (!VerifyPasswordHash(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
+            throw new ArgumentException("Current password is incorrect.");
+
+        CreatePasswordHash(request.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+        user.PasswordHash = passwordHash;
+        user.PasswordSalt = passwordSalt;
+
+        await _userRepository.UpdateUserAsync(user);
+
+        await _produceKafkaService.ProduceAsync("PasswordChanged", request.UserId.ToString());
+
+        _logger.LogInformation($"Password changed successfully for user ID: {request.UserId}");
+
     }
 }
