@@ -6,28 +6,49 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUserTableFields : Migration
+    public partial class Migrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "building",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    metro = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    city = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    village = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    district = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    room_count = table.Column<int>(type: "int", nullable: false),
+                    area = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ad_type = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    seller_type = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_building", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "building_type",
                 columns: table => new
                 {
-                    id_building_type = table.Column<int>(type: "int", nullable: false),
+                    id_building_type = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     building_type_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_building_type", x => x.id_building_type);
                 });
 
             migrationBuilder.CreateTable(
                 name: "document",
                 columns: table => new
                 {
-                    id_document = table.Column<int>(type: "int", nullable: false),
+                    id_document = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     document_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     keyword_01 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
@@ -43,9 +64,9 @@ namespace DataAccessLayer.Migrations
                 name: "metro",
                 columns: table => new
                 {
-                    id_metro = table.Column<int>(type: "int", nullable: false),
+                    id_metro = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     metro_name = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    fk_id_region = table.Column<int>(type: "int", nullable: true),
+                    fk_id_region = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     keyword_01 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_02 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_03 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
@@ -61,7 +82,7 @@ namespace DataAccessLayer.Migrations
                 name: "operation_type",
                 columns: table => new
                 {
-                    id_operation_type = table.Column<int>(type: "int", nullable: false),
+                    id_operation_type = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     operation_type_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
@@ -74,7 +95,7 @@ namespace DataAccessLayer.Migrations
                 name: "owner_type",
                 columns: table => new
                 {
-                    id_owner_type = table.Column<int>(type: "int", nullable: false),
+                    id_owner_type = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     owner_type_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
@@ -87,42 +108,41 @@ namespace DataAccessLayer.Migrations
                 name: "property",
                 columns: table => new
                 {
-                    id_property = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_id_source = table.Column<int>(type: "int", nullable: true),
-                    fk_id_link = table.Column<int>(type: "int", nullable: true),
+                    id_property = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FkIdSource = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    FkIdLink = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    fk_id_property_type = table.Column<int>(type: "int", nullable: true),
-                    fk_id_operation_type = table.Column<int>(type: "int", nullable: true),
-                    fk_id_city = table.Column<int>(type: "int", nullable: true),
+                    fk_id_property_type = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    fk_id_operation_type = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    fk_id_city = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     address = table.Column<string>(type: "ntext", nullable: true),
-                    fk_id_document = table.Column<int>(type: "int", nullable: true),
+                    fk_id_document = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     price = table.Column<double>(type: "float", nullable: true),
-                    fk_id_currency = table.Column<int>(type: "int", nullable: true),
+                    fk_id_currency = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     data = table.Column<string>(type: "ntext", nullable: true),
                     area = table.Column<double>(type: "float", nullable: true),
                     general_area = table.Column<double>(type: "float", nullable: true),
                     floor = table.Column<int>(type: "int", nullable: true),
                     floor_of = table.Column<int>(type: "int", nullable: true),
-                    fk_id_room = table.Column<int>(type: "int", nullable: true),
-                    fk_id_building_type = table.Column<int>(type: "int", nullable: true),
+                    FkIdRoom = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    fk_id_building_type = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     unit_price = table.Column<double>(type: "float", nullable: true),
-                    eX = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    eY = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ex = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ey = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     cp_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    cp_phone_number_01 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    cp_phone_number_02 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    cp_phone_number_03 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    fk_id_owner_type = table.Column<int>(type: "int", nullable: true),
+                    cp_phone_number_01 = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    cp_phone_number_02 = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    cp_phone_number_03 = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    fk_id_owner_type = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     images = table.Column<string>(type: "ntext", nullable: true),
-                    insert_date = table.Column<DateTime>(type: "datetime", nullable: true, defaultValueSql: "(getdate())"),
-                    upload_status = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
-                    upload_message = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    fk_id_metro = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
+                    insert_date = table.Column<DateTime>(type: "datetime", nullable: true),
+                    upload_status = table.Column<int>(type: "int", nullable: true),
+                    upload_message = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    fk_id_metro = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     approvment_status = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
                     approvment_message = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    fk_id_repair = table.Column<int>(type: "int", nullable: true, defaultValue: 0),
-                    fk_id_target = table.Column<int>(type: "int", nullable: true, defaultValue: 0)
+                    fk_id_repair = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    fk_id_target = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -133,7 +153,7 @@ namespace DataAccessLayer.Migrations
                 name: "property_type",
                 columns: table => new
                 {
-                    id_property_type = table.Column<int>(type: "int", nullable: false),
+                    id_property_type = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     property_type_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
@@ -145,39 +165,41 @@ namespace DataAccessLayer.Migrations
                 name: "region",
                 columns: table => new
                 {
-                    id_region = table.Column<int>(type: "int", nullable: true),
-                    region_code = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
-                    region_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    id_region = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    region_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    region_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_01 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_02 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_03 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_region", x => x.id_region);
                 });
 
             migrationBuilder.CreateTable(
                 name: "region_unit_01",
                 columns: table => new
                 {
-                    id_region = table.Column<int>(type: "int", nullable: true),
-                    region_code = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
-                    region_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    id_region = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    region_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    region_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_01 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_02 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     keyword_03 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_region_unit_01", x => x.id_region);
                 });
 
             migrationBuilder.CreateTable(
                 name: "repair_rate",
                 columns: table => new
                 {
-                    id_repair_rate = table.Column<int>(type: "int", nullable: false),
+                    id_repair_rate = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     repair_rate_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    is_active = table.Column<int>(type: "int", nullable: true, defaultValue: 0)
+                    is_active = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -188,9 +210,9 @@ namespace DataAccessLayer.Migrations
                 name: "room_count",
                 columns: table => new
                 {
-                    id_room_count = table.Column<int>(type: "int", nullable: false),
+                    id_room_count = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     room_count_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    keyword = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    keyword = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -198,22 +220,42 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "user",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserMail = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
-                    ContactNumber = table.Column<string>(type: "char(13)", unicode: false, fixedLength: true, maxLength: 13, nullable: false),
-                    OtpCode = table.Column<string>(type: "char(6)", unicode: false, fixedLength: true, maxLength: 6, nullable: true),
-                    OtpCreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsValidate = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    UserPassword = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_mail = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    contact_number = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    otp_code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    otp_created_time = table.Column<DateTime>(type: "datetime", nullable: false),
+                    is_validate = table.Column<bool>(type: "bit", nullable: false),
+                    user_password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    password_hash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    password_salt = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__Users__1788CC4CDE2E4347", x => x.Id);
+                    table.PrimaryKey("PK_user", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "building_post",
+                columns: table => new
+                {
+                    building_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_building_post", x => x.building_id);
+                    table.ForeignKey(
+                        name: "FK_building_post_building_building_id",
+                        column: x => x.building_id,
+                        principalTable: "building",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -255,7 +297,7 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_property_fk_id_link",
                 table: "property",
-                column: "fk_id_link");
+                column: "FkIdLink");
 
             migrationBuilder.CreateIndex(
                 name: "IX_property_fk_id_owner_type",
@@ -265,7 +307,7 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_property_fk_id_source",
                 table: "property",
-                column: "fk_id_source");
+                column: "FkIdSource");
 
             migrationBuilder.CreateIndex(
                 name: "IX_property_insert_date",
@@ -277,35 +319,14 @@ namespace DataAccessLayer.Migrations
                 name: "IX_property_upload_status",
                 table: "property",
                 column: "upload_status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_id_region",
-                table: "region",
-                column: "id_region",
-                unique: true,
-                filter: "[id_region] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_region_code",
-                table: "region",
-                column: "region_code");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_region_unit_01_id_region",
-                table: "region_unit_01",
-                column: "id_region",
-                unique: true,
-                filter: "[id_region] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_region_unit_01_region_code",
-                table: "region_unit_01",
-                column: "region_code");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "building_post");
+
             migrationBuilder.DropTable(
                 name: "building_type");
 
@@ -340,7 +361,10 @@ namespace DataAccessLayer.Migrations
                 name: "room_count");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "user");
+
+            migrationBuilder.DropTable(
+                name: "building");
         }
     }
 }

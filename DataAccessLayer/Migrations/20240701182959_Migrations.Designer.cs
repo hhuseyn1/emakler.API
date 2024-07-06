@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240602054519_AddUserTableFields")]
-    partial class AddUserTableFields
+    [Migration("20240701182959_Migrations")]
+    partial class Migrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,21 +25,107 @@ namespace DataAccessLayer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EntityLayer.Entities.Building", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AdType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("ad_type");
+
+                    b.Property<decimal>("Area")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("area");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("city");
+
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("district");
+
+                    b.Property<string>("Metro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("metro");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<int>("RoomCount")
+                        .HasColumnType("int")
+                        .HasColumnName("room_count");
+
+                    b.Property<string>("SellerType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("seller_type");
+
+                    b.Property<string>("Village")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("village");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("building", (string)null);
+                });
+
+            modelBuilder.Entity("EntityLayer.Entities.BuildingPost", b =>
+                {
+                    b.Property<Guid>("BuildingId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("building_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("BuildingId");
+
+                    b.ToTable("building_post", (string)null);
+                });
+
             modelBuilder.Entity("EntityLayer.Entities.BuildingType", b =>
                 {
+                    b.Property<Guid>("IdBuildingType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id_building_type");
+
                     b.Property<string>("BuildingTypeName")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("building_type_name");
 
-                    b.Property<int>("IdBuildingType")
-                        .HasColumnType("int")
-                        .HasColumnName("id_building_type");
-
                     b.Property<string>("Keyword")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("keyword");
+
+                    b.HasKey("IdBuildingType");
 
                     b.HasIndex(new[] { "IdBuildingType" }, "IX_building_type");
 
@@ -48,8 +134,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.Document", b =>
                 {
-                    b.Property<int>("IdDocument")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdDocument")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_document");
 
                     b.Property<string>("DocumentName")
@@ -84,12 +170,12 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.Metro", b =>
                 {
-                    b.Property<int>("IdMetro")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdMetro")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_metro");
 
-                    b.Property<int?>("FkIdRegion")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdRegion")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_region");
 
                     b.Property<string>("Keyword01")
@@ -131,8 +217,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.OperationType", b =>
                 {
-                    b.Property<int>("IdOperationType")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdOperationType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_operation_type");
 
                     b.Property<string>("Keyword")
@@ -152,8 +238,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.OwnerType", b =>
                 {
-                    b.Property<int>("IdOwnerType")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdOwnerType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_owner_type");
 
                     b.Property<string>("Keyword")
@@ -173,12 +259,10 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.Property", b =>
                 {
-                    b.Property<int>("IdProperty")
+                    b.Property<Guid>("IdProperty")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_property");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdProperty"));
 
                     b.Property<string>("Address")
                         .HasColumnType("ntext")
@@ -210,18 +294,18 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("cp_name");
 
                     b.Property<string>("CpPhoneNumber01")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("cp_phone_number_01");
 
                     b.Property<string>("CpPhoneNumber02")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("cp_phone_number_02");
 
                     b.Property<string>("CpPhoneNumber03")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("cp_phone_number_03");
 
                     b.Property<string>("Data")
@@ -231,69 +315,60 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("EX")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("eX");
+                        .HasColumnName("ex");
 
                     b.Property<string>("EY")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("eY");
+                        .HasColumnName("ey");
 
-                    b.Property<int?>("FkIdBuildingType")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdBuildingType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_building_type");
 
-                    b.Property<int?>("FkIdCity")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdCity")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_city");
 
-                    b.Property<int?>("FkIdCurrency")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdCurrency")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_currency");
 
-                    b.Property<int?>("FkIdDocument")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdDocument")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_document");
 
-                    b.Property<int?>("FkIdLink")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_id_link");
+                    b.Property<Guid?>("FkIdLink")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("FkIdMetro")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
+                    b.Property<Guid?>("FkIdMetro")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_metro");
 
-                    b.Property<int?>("FkIdOperationType")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdOperationType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_operation_type");
 
-                    b.Property<int?>("FkIdOwnerType")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdOwnerType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_owner_type");
 
-                    b.Property<int?>("FkIdPropertyType")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("FkIdPropertyType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_property_type");
 
-                    b.Property<int?>("FkIdRepair")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
+                    b.Property<Guid?>("FkIdRepair")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_repair");
 
-                    b.Property<int?>("FkIdRoom")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_id_room");
+                    b.Property<Guid?>("FkIdRoom")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("FkIdSource")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_id_source");
+                    b.Property<Guid?>("FkIdSource")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("FkIdTarget")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
+                    b.Property<Guid?>("FkIdTarget")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("fk_id_target");
 
                     b.Property<int?>("Floor")
@@ -313,10 +388,8 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("images");
 
                     b.Property<DateTime?>("InsertDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
-                        .HasColumnName("insert_date")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnName("insert_date");
 
                     b.Property<double?>("Price")
                         .HasColumnType("float")
@@ -327,14 +400,12 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("unit_price");
 
                     b.Property<string>("UploadMessage")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("upload_message");
 
                     b.Property<int?>("UploadStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(0)
                         .HasColumnName("upload_status");
 
                     b.HasKey("IdProperty");
@@ -371,8 +442,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.PropertyType", b =>
                 {
-                    b.Property<int>("IdPropertyType")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdPropertyType")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_property_type");
 
                     b.Property<string>("PropertyTypeName")
@@ -387,8 +458,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.Region", b =>
                 {
-                    b.Property<int?>("IdRegion")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("IdRegion")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_region");
 
                     b.Property<string>("Keyword01")
@@ -407,28 +478,24 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("keyword_03");
 
                     b.Property<string>("RegionCode")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("region_code");
 
                     b.Property<string>("RegionName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("region_name");
 
-                    b.HasIndex(new[] { "IdRegion" }, "IX_id_region")
-                        .IsUnique()
-                        .HasFilter("[id_region] IS NOT NULL");
-
-                    b.HasIndex(new[] { "RegionCode" }, "IX_region_code");
+                    b.HasKey("IdRegion");
 
                     b.ToTable("region", (string)null);
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.RegionUnit01", b =>
                 {
-                    b.Property<int?>("IdRegion")
-                        .HasColumnType("int")
+                    b.Property<Guid?>("IdRegion")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_region");
 
                     b.Property<string>("Keyword01")
@@ -447,34 +514,28 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("keyword_03");
 
                     b.Property<string>("RegionCode")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("region_code");
 
                     b.Property<string>("RegionName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("region_name");
 
-                    b.HasIndex(new[] { "IdRegion" }, "IX_region_unit_01_id_region")
-                        .IsUnique()
-                        .HasFilter("[id_region] IS NOT NULL");
-
-                    b.HasIndex(new[] { "RegionCode" }, "IX_region_unit_01_region_code");
+                    b.HasKey("IdRegion");
 
                     b.ToTable("region_unit_01", (string)null);
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.RepairRate", b =>
                 {
-                    b.Property<int>("IdRepairRate")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdRepairRate")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_repair_rate");
 
                     b.Property<int?>("IsActive")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(0)
                         .HasColumnName("is_active");
 
                     b.Property<string>("RepairRateName")
@@ -489,13 +550,13 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("EntityLayer.Entities.RoomCount", b =>
                 {
-                    b.Property<int>("IdRoomCount")
-                        .HasColumnType("int")
+                    b.Property<Guid>("IdRoomCount")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_room_count");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("keyword");
 
                     b.Property<string>("RoomCountName")
@@ -511,52 +572,64 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("EntityLayer.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
 
                     b.Property<string>("ContactNumber")
                         .IsRequired()
-                        .HasMaxLength(13)
-                        .IsUnicode(false)
-                        .HasColumnType("char(13)")
-                        .IsFixedLength();
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("contact_number");
 
                     b.Property<bool>("IsValidate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnName("is_validate");
 
                     b.Property<string>("OtpCode")
-                        .HasMaxLength(6)
-                        .IsUnicode(false)
-                        .HasColumnType("char(6)")
-                        .IsFixedLength();
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("otp_code");
 
                     b.Property<DateTime>("OtpCreatedTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("otp_created_time");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("varbinary(max)")
+                        .HasColumnName("password_hash");
 
                     b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("varbinary(max)")
+                        .HasColumnName("password_salt");
 
                     b.Property<string>("UserMail")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("user_mail");
 
                     b.Property<string>("UserPassword")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("user_password");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Users__1788CC4CDE2E4347");
+                    b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("user", (string)null);
+                });
+
+            modelBuilder.Entity("EntityLayer.Entities.BuildingPost", b =>
+                {
+                    b.HasOne("EntityLayer.Entities.Building", "Building")
+                        .WithOne()
+                        .HasForeignKey("EntityLayer.Entities.BuildingPost", "BuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Building");
                 });
 #pragma warning restore 612, 618
         }
