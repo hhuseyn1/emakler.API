@@ -11,4 +11,7 @@ public interface IUserService
     Task<User> GetUserByMailAsync(string userMail);
     Task<User> GetUserByContactNumberAsync(string contactNumber);
     Task<bool> ValidateUser(string userMail, string password);
+    Task ConfirmEmail(Guid userId);
+    Task ChangePassword(ChangePasswordRequest request);
+
 }

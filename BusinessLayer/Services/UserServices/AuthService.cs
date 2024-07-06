@@ -2,6 +2,7 @@
 using DataAccessLayer.Interfaces;
 using DTO.User;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,11 +15,13 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
+    private readonly ILogger _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger logger)
     {
         _userRepository = userRepository;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<string> Login(UserLoginRequest request)
@@ -74,4 +77,6 @@ public class AuthService : IAuthService
         }
         return true;
     }
+
+   
 }
