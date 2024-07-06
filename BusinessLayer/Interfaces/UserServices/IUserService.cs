@@ -1,17 +1,18 @@
 ﻿using DTO.User;
-using EntityLayer.Entities;
 
 namespace BusinessLayer.Interfaces;
 
 public interface IUserService
 {
-    Task RegisterUser(UserRegistration userRegistration);
-    Task UpdateUser(Guid userId, UserRegistration userRegistration);
-    Task DeleteUser(Guid userId);
-    Task<User> GetUserByMailAsync(string userMail);
-    Task<User> GetUserByContactNumberAsync(string contactNumber);
-    Task<bool> ValidateUser(string userMail, string password);
-    Task ConfirmEmail(Guid userId);
-    Task ChangePassword(ChangePasswordRequest request);
-
+    Task RegisterUser(AddUserDto addUserDto); 
+    Task UpdateUserAsync(Guid userId, UpdateUserDto updateUserDto); 
+    Task DeleteUserAsync(Guid userId); 
+    Task<UserDto> GetUserByIdAsync(Guid userId);
+    Task<UserDto> GetUserByMailAsync(string userMail); 
+    Task<UserDto> GetUserByContactNumberAsync(string contactNumber);
+    Task<bool> ValidateUserAsync(string userMail, string password); 
+    Task<bool> SendOtpAsync(SendOtpRequest request); 
+    Task<bool> VerifyOtpAsync(VerifyOtpRequest request); 
+    Task ConfirmEmailAsync(Guid userId);
+    Task ChangePasswordAsync(ChangePasswordRequest request);
 }

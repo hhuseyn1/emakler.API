@@ -26,14 +26,12 @@ public class AuthService : IAuthService
 
     public async Task<string> Login(UserLoginRequest request)
     {
-        // Validate user credentials
         var user = await _userRepository.GetUserByUsernameAsync(request.Email);
         if (user == null || !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
         {
             throw new UnauthorizedAccessException("Invalid username or password.");
         }
 
-        // Create JWT token
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -52,18 +50,32 @@ public class AuthService : IAuthService
         return tokenString;
     }
 
-    public async Task<bool> VerifyOtp(string contactNumber, string otpCode)
+    public async Task<bool> VerifyOtpAsync(VerifyOtpRequest request)
     {
-        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
-        if (user == null || user.OtpCode != otpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
+        var user = await _userRepository.GetUserByContactNumberAsync(request.ContactNumber);
+
+        if (user == null || user.OtpCode != request.OtpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
             return false;
 
         user.IsValidate = true;
         user.OtpCode = null;
         user.OtpCreatedTime = DateTime.MinValue;
-        await _userRepository.UpdateUserAsync(user);
+
+        var updateUserDto = new UpdateUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            OtpCode = null,
+            OtpCreatedTime = DateTime.MinValue,
+            IsValidate = true,
+            Password = user.UserPassword
+        };
+
+        await _userRepository.UpdateUserAsync(updateUserDto);
         return true;
     }
+
+
 
     private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {

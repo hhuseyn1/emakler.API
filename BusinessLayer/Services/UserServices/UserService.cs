@@ -12,83 +12,97 @@ namespace BusinessLayer.Services;
 
 public class UserService : IUserService
 {
-    private readonly IOtpService _otpService;
     private readonly IUserRepository _userRepository;
     private readonly ILogger<UserService> _logger;
+    private readonly IOtpService _otpService;
     private readonly IProducerKafkaService _produceKafkaService;
-    private readonly IAuthService _authService;
 
     public UserService(
-        IOtpService otpService,
         IUserRepository userRepository,
         ILogger<UserService> logger,
-        IProducerKafkaService produceKafkaService,
-        IAuthService authService)
+        IOtpService otpService,
+        IProducerKafkaService produceKafkaService)
     {
-        _otpService = otpService;
         _userRepository = userRepository;
         _logger = logger;
+        _otpService = otpService;
         _produceKafkaService = produceKafkaService;
-        _authService = authService;
     }
 
-    public async Task RegisterUser(UserRegistration userRegistration)
+    public async Task RegisterUser(AddUserDto addUserDto)
     {
-        var existingUser = await _userRepository.GetUserByUsernameAsync(userRegistration.Email);
-        if (existingUser != null)
-            throw new ArgumentException("User already exists with this email.");
+        var existingUser = await _userRepository.GetUserByUsernameAsync(addUserDto.UserMail);
+        if (existingUser != null) throw new ArgumentException("User already exists with this email.");
 
         var user = new User
         {
             Id = Guid.NewGuid(),
-            UserMail = userRegistration.Email,
-            ContactNumber = userRegistration.ContactNumber,
-            UserPassword = userRegistration.Password,
+            UserMail = addUserDto.UserMail,
+            ContactNumber = addUserDto.ContactNumber,
             IsValidate = false
         };
 
-        CreatePasswordHash(userRegistration.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        CreatePasswordHash(addUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
-        await _userRepository.AddUserAsync(user);
+        await _userRepository.AddUserAsync(new AddUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            Password = addUserDto.Password
+        });
 
-        await _otpService.SendOtpAsync(userRegistration.ContactNumber);
+        await _otpService.SendOtpAsync(new SendOtpRequest { ContactNumber = addUserDto.ContactNumber });
 
-        await _produceKafkaService.ProduceAsync("UserRegistered", userRegistration.ContactNumber);
+        await _produceKafkaService.ProduceAsync("UserRegistered", user.Id.ToString());
 
-        _logger.LogInformation($"User registered successfully with email: {userRegistration.Email}");
+        _logger.LogInformation($"User registered successfully with email: {addUserDto.UserMail}");
     }
 
-    public async Task UpdateUser(Guid userId, UserRegistration userRegistration)
+    public async Task UpdateUserAsync(Guid userId, UpdateUserDto updateUserDto)
     {
-        // Check if the user exists
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
-            throw new ArgumentException("User does not exist.");
+        if (user == null) throw new ArgumentException("User does not exist.");
 
-        // Update user details
-        user.UserMail = userRegistration.Email;
-        user.ContactNumber = userRegistration.ContactNumber;
-        user.UserPassword = userRegistration.Password;
+        if (updateUserDto.ContactNumber != null)
+            user.ContactNumber = updateUserDto.ContactNumber;
 
-        // Hash the new password
-        CreatePasswordHash(userRegistration.Password, out byte[] passwordHash, out byte[] passwordSalt);
-        user.PasswordHash = passwordHash;
-        user.PasswordSalt = passwordSalt;
+        if (updateUserDto.OtpCode != null)
+            user.OtpCode = updateUserDto.OtpCode;
 
-        await _userRepository.UpdateUserAsync(user);
+        if (updateUserDto.OtpCreatedTime.HasValue)
+            user.OtpCreatedTime = updateUserDto.OtpCreatedTime.Value;
+
+        if (updateUserDto.IsValidate.HasValue)
+            user.IsValidate = updateUserDto.IsValidate.Value;
+
+        if (updateUserDto.Password != null)
+        {
+            CreatePasswordHash(updateUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+        }
+
+        await _userRepository.UpdateUserAsync(new UpdateUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            OtpCode = user.OtpCode,
+            OtpCreatedTime = user.OtpCreatedTime,
+            IsValidate = user.IsValidate,
+            Password = updateUserDto.Password
+        });
 
         await _produceKafkaService.ProduceAsync("UserUpdated", userId.ToString());
 
         _logger.LogInformation($"User updated successfully with ID: {userId}");
     }
 
-    public async Task DeleteUser(Guid userId)
+    public async Task DeleteUserAsync(Guid userId)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
-            throw new ArgumentException("User does not exist.");
+        if (user == null) throw new ArgumentException("User does not exist.");
 
         await _userRepository.DeleteUserAsync(userId);
 
@@ -97,74 +111,154 @@ public class UserService : IUserService
         _logger.LogInformation($"User deleted successfully with ID: {userId}");
     }
 
-    public async Task<User> GetUserByMailAsync(string userMail)
+    public async Task<UserDto> GetUserByIdAsync(Guid userId)
     {
-        return await _userRepository.GetUserByUsernameAsync(userMail);
+        var user = await _userRepository.GetUserByIdAsync(userId);
+        if (user == null) throw new ArgumentException("User not found.");
+        return new UserDto
+        {
+            Id = user.Id,
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            IsEmailConfirmed = user.IsValidate,
+            CreatedDate = user.OtpCreatedTime
+        };
     }
 
-    public async Task<User> GetUserByContactNumberAsync(string contactNumber)
-    {
-        return await _userRepository.GetUserByContactNumberAsync(contactNumber);
-    }
-
-    public async Task<bool> ValidateUser(string userMail, string password)
+    public async Task<UserDto> GetUserByMailAsync(string userMail)
     {
         var user = await _userRepository.GetUserByUsernameAsync(userMail);
-        if (user == null)
-            return false;
+        if (user == null) throw new ArgumentException("User not found.");
+        return new UserDto
+        {
+            Id = user.Id,
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            IsEmailConfirmed = user.IsValidate,
+            CreatedDate = user.OtpCreatedTime
+        };
+    }
+
+    public async Task<UserDto> GetUserByContactNumberAsync(string contactNumber)
+    {
+        var user = await _userRepository.GetUserByContactNumberAsync(contactNumber);
+        if (user == null) throw new ArgumentException("User not found.");
+        return new UserDto
+        {
+            Id = user.Id,
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            IsEmailConfirmed = user.IsValidate,
+            CreatedDate = user.OtpCreatedTime
+        };
+    }
+
+    public async Task<bool> ValidateUserAsync(string userMail, string password)
+    {
+        var user = await _userRepository.GetUserByUsernameAsync(userMail);
+        if (user == null) return false;
 
         return VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
     }
 
-    private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    public async Task<bool> SendOtpAsync(SendOtpRequest request)
     {
-        using (var hmac = new HMACSHA512())
+        var otp = new Random().Next(100000, 999999).ToString();
+        var user = await _userRepository.GetUserByContactNumberAsync(request.ContactNumber);
+        if (user != null)
         {
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            user.OtpCode = otp;
+            user.OtpCreatedTime = DateTime.UtcNow;
+            await _userRepository.UpdateUserAsync(new UpdateUserDto
+            {
+                UserMail = user.UserMail,
+                ContactNumber = user.ContactNumber,
+                OtpCode = otp,
+                OtpCreatedTime = user.OtpCreatedTime,
+                IsValidate = user.IsValidate
+            });
+
+            await _otpService.SendOtpAsync(request);
+
+            return true;
         }
+
+        return false;
     }
 
-    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    public async Task<bool> VerifyOtpAsync(VerifyOtpRequest request)
     {
-        using (var hmac = new HMACSHA512(storedSalt))
+        var user = await _userRepository.GetUserByContactNumberAsync(request.ContactNumber);
+        if (user == null || user.OtpCode != request.OtpCode || (DateTime.UtcNow - user.OtpCreatedTime).TotalMinutes > 10)
+            return false;
+
+        user.IsValidate = true;
+        user.OtpCode = null;
+        user.OtpCreatedTime = DateTime.MinValue;
+
+        await _userRepository.UpdateUserAsync(new UpdateUserDto
         {
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return computedHash.SequenceEqual(storedHash);
-        }
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            OtpCode = user.OtpCode,
+            OtpCreatedTime = user.OtpCreatedTime,
+            IsValidate = user.IsValidate
+        });
+
+        return true;
     }
 
-    public async Task ConfirmEmail(Guid userId)
+    public async Task ConfirmEmailAsync(Guid userId)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
-            throw new ArgumentException("User does not exist.");
+        if (user == null) throw new ArgumentException("User not found.");
 
-        await _userRepository.UpdateUserAsync(user);
-
-        await _produceKafkaService.ProduceAsync("EmailConfirmed", userId.ToString());
-
-        _logger.LogInformation($"User email confirmed successfully with ID: {userId}");
+        user.IsValidate = true;
+        await _userRepository.UpdateUserAsync(new UpdateUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            OtpCode = user.OtpCode,
+            OtpCreatedTime = user.OtpCreatedTime,
+            IsValidate = user.IsValidate
+        });
     }
 
-    public async Task ChangePassword(ChangePasswordRequest request)
+    public async Task ChangePasswordAsync(ChangePasswordRequest request)
     {
         var user = await _userRepository.GetUserByIdAsync(request.UserId);
-        if (user == null)
-            throw new ArgumentException("User does not exist.");
+        if (user == null) throw new ArgumentException("User not found.");
 
         if (!VerifyPasswordHash(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
             throw new ArgumentException("Current password is incorrect.");
 
-        CreatePasswordHash(request.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
-        user.PasswordHash = passwordHash;
-        user.PasswordSalt = passwordSalt;
+        CreatePasswordHash(request.NewPassword, out byte[] newPasswordHash, out byte[] newPasswordSalt);
 
-        await _userRepository.UpdateUserAsync(user);
+        user.PasswordHash = newPasswordHash;
+        user.PasswordSalt = newPasswordSalt;
 
-        await _produceKafkaService.ProduceAsync("PasswordChanged", request.UserId.ToString());
+        await _userRepository.UpdateUserAsync(new UpdateUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            OtpCode = user.OtpCode,
+            OtpCreatedTime = user.OtpCreatedTime,
+            IsValidate = user.IsValidate,
+            Password = request.NewPassword
+        });
+    }
 
-        _logger.LogInformation($"Password changed successfully for user ID: {request.UserId}");
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using var hmac = new HMACSHA512();
+        passwordSalt = hmac.Key;
+        passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+    }
 
+    private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    {
+        using var hmac = new HMACSHA512(storedSalt);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return computedHash.SequenceEqual(storedHash);
     }
 }

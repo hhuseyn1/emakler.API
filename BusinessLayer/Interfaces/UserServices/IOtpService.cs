@@ -1,7 +1,9 @@
-﻿namespace BusinessLayer.Interfaces.UserServices;
+﻿using DTO.User;
+
+namespace BusinessLayer.Interfaces.UserServices;
 
 public interface IOtpService
 {
-    Task<bool> SendOtpAsync(string contactNumber);
-    Task<bool> VerifyOtpAsync(string contactNumber, string otpCode);
+    Task<bool> SendOtpAsync(SendOtpRequest request);
+    Task<bool> VerifyOtpAsync(VerifyOtpRequest request);
 }
