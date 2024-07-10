@@ -1,7 +1,10 @@
-﻿using EntityLayer.Entities;
+﻿using BusinessLayer.Exceptions;
+using DataAccessLayer.Exceptions;
+using EntityLayer.Entities;
 using System.Net;
 
-namespace EMakler.PROAPI.Middlewares;
+namespace EMakler.PROAPI.Middlewares; 
+
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
@@ -38,17 +41,21 @@ public class GlobalExceptionMiddleware
 
         switch (exception)
         {
-            case NotFoundException notFoundException:
+            case EntityNotFoundException entityNotFoundException:
                 response.StatusCode = (int)HttpStatusCode.NotFound;
-                errorResponse.Message = notFoundException.Message;
+                errorResponse.Message = entityNotFoundException.Message;
+                break;
+            case DatabaseConnectionException databaseConnectionException:
+                response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                errorResponse.Message = databaseConnectionException.Message;
+                break;
+            case BusinessRuleException businessRuleException:
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                errorResponse.Message = businessRuleException.Message;
                 break;
             case ValidationException validationException:
                 response.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.Message = validationException.Message;
-                break;
-            case UnauthorizedAccessException unauthorizedAccessException:
-                response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                errorResponse.Message = unauthorizedAccessException.Message;
                 break;
             default:
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
