@@ -10,6 +10,7 @@ using DataAccessLayer.Interfaces;
 using DataAccessLayer.Repository;
 using EMakler.PROAPI.Configurations;
 using EMakler.PROAPI.Entities.Profiles;
+using EMakler.PROAPI.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -91,20 +92,21 @@ builder.Services.AddScoped<BuildingFilterValidator>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseMiddleware<GlobalExceptionMiddleware>(); 
 }
 
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseMiddleware<JwtMiddleware>();
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 
