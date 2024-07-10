@@ -4,7 +4,7 @@ namespace BusinessLayer.Interfaces;
 
 public interface IUserService
 {
-    Task RegisterUser(AddUserDto addUserDto); 
+    Task RegisterUser(UserRegistration userRegistration); 
     Task UpdateUserAsync(Guid userId, UpdateUserDto updateUserDto); 
     Task DeleteUserAsync(Guid userId); 
     Task<UserDto> GetUserByIdAsync(Guid userId);

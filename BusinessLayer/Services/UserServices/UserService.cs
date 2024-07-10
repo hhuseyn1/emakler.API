@@ -29,20 +29,20 @@ public class UserService : IUserService
         _produceKafkaService = produceKafkaService;
     }
 
-    public async Task RegisterUser(AddUserDto addUserDto)
+    public async Task RegisterUser(UserRegistration userRegistration)
     {
-        var existingUser = await _userRepository.GetUserByUsernameAsync(addUserDto.UserMail);
+        var existingUser = await _userRepository.GetUserByUsernameAsync(userRegistration.Email);
         if (existingUser != null) throw new ArgumentException("User already exists with this email.");
 
         var user = new User
         {
             Id = Guid.NewGuid(),
-            UserMail = addUserDto.UserMail,
-            ContactNumber = addUserDto.ContactNumber,
+            UserMail = userRegistration.Email,
+            ContactNumber = userRegistration.ContactNumber,
             IsValidate = false
         };
 
-        CreatePasswordHash(addUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        CreatePasswordHash(userRegistration.Password, out byte[] passwordHash, out byte[] passwordSalt);
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
@@ -50,14 +50,14 @@ public class UserService : IUserService
         {
             UserMail = user.UserMail,
             ContactNumber = user.ContactNumber,
-            Password = addUserDto.Password
+            Password = userRegistration.Password
         });
 
-        await _otpService.SendOtpAsync(new SendOtpRequest { ContactNumber = addUserDto.ContactNumber });
+        await _otpService.SendOtpAsync(new SendOtpRequest { ContactNumber = userRegistration.ContactNumber });
 
         await _produceKafkaService.ProduceAsync("UserRegistered", user.Id.ToString());
 
-        _logger.LogInformation($"User registered successfully with email: {addUserDto.UserMail}");
+        _logger.LogInformation($"User registered successfully with email: {userRegistration.Email}");
     }
 
     public async Task UpdateUserAsync(Guid userId, UpdateUserDto updateUserDto)

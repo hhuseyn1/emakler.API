@@ -71,7 +71,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var isValid = await _otpService.VerifyOtpAsync(request.ContactNumber, request.OtpCode);
+            var isValid = await _otpService.VerifyOtpAsync(request);
             if (isValid)
             {
                 _logger.LogInformation($"OTP verified successfully for contact number: {request.ContactNumber}");
@@ -99,7 +99,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var isValidUser = await _userService.ValidateUser(loginRequest.Email, loginRequest.Password);
+            var isValidUser = await _userService.ValidateUserAsync(loginRequest.Email, loginRequest.Password);
             if (!isValidUser)
             {
                 _logger.LogWarning($"Login attempt failed for user: {loginRequest.Email}");
