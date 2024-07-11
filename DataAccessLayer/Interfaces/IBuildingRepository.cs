@@ -11,4 +11,5 @@ public interface IBuildingRepository
     Task<IEnumerable<BuildingPost>> GetByFilterAsync(BuildingFilter filter);
     Task UpdateAsync(BuildingPost buildingPost);
     Task DeleteAsync(Guid id);
-}
+    Task<IEnumerable<BuildingPost>> GetByPaginationAsync(int pageNumber, int pageSize);
+ }

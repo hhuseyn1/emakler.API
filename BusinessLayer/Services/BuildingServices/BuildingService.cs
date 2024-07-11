@@ -139,4 +139,18 @@ public class BuildingService : IBuildingService
             throw;
         }
     }
+
+    public async Task<IEnumerable<BuildingPostDTO>> GetBuildingPostsByPaginationAsync(int pageNumber, int pageSize)
+    {
+        try
+        {
+            var buildingPosts = await _buildingRepository.GetByPaginationAsync(pageNumber, pageSize);
+            return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving paginated BuildingPosts.");
+            throw;
+        }
+    }
 }

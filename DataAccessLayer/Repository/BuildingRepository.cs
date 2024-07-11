@@ -3,6 +3,7 @@ using DataAccessLayer.Interfaces;
 using DTO.Building;
 using EntityLayer.Entities;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DataAccessLayer.Repository;
 
@@ -62,4 +63,21 @@ public class BuildingRepository : IBuildingRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    
+    public async Task<IEnumerable<BuildingPost>> GetByPaginationAsync(int pageNumber, int pageSize)
+    {
+        var query = _context.BuildingPosts.AsQueryable();
+
+        var totalItemCount = await query.CountAsync();
+
+        return await query
+            .Include(bp => bp.Building)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+    }
+
+
 }

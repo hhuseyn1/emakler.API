@@ -59,4 +59,11 @@ public class BuildingController : ControllerBase
         await _buildingService.DeleteBuildingPostAsync(id);
         return Ok(new { Message = "BuildingPost deleted successfully." });
     }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPagedBuildings(int pageNumber, int pageSize)
+    {
+        var pagedBuildings = await _buildingService.GetBuildingPostsByPaginationAsync(pageNumber, pageSize);
+        return Ok(pagedBuildings);
+    }
 }
