@@ -79,5 +79,11 @@ public class BuildingRepository : IBuildingRepository
 
     }
 
-
+    public async Task<IEnumerable<BuildingPost>> SearchAsync(string searchTerm)
+    {
+        return await _context.BuildingPosts.Include(bp => bp.Building)
+                             .Where(bp => bp.Building.Village.Contains(searchTerm) || bp.Building.District.Contains(searchTerm))
+                             .ToListAsync();
+                             
+    }
 }

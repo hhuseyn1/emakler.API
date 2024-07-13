@@ -66,4 +66,12 @@ public class BuildingController : ControllerBase
         var pagedBuildings = await _buildingService.GetBuildingPostsByPaginationAsync(pageNumber, pageSize);
         return Ok(pagedBuildings);
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchBuildingPosts([FromQuery] string searchTeam)
+    {
+        var buildingPostsDto = await _buildingService.SearchBuildingPostsAsync(searchTeam);
+        return Ok(buildingPostsDto);
+    }
+
 }

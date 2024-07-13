@@ -153,4 +153,18 @@ public class BuildingService : IBuildingService
             throw;
         }
     }
+
+    public async Task<IEnumerable<BuildingPostDTO>> SearchBuildingPostsAsync(string searchTerm)
+    {
+        try
+        {
+            var buildingPosts = await _buildingRepository.SearchAsync(searchTerm);
+            return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while searching BuildingPosts.");
+            throw;
+        }
+        }
 }

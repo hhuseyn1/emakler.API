@@ -11,4 +11,5 @@ public interface IBuildingService
     Task UpdateBuildingPostAsync(Guid id, BuildingPostDTO buildingPostDTO);
     Task DeleteBuildingPostAsync(Guid id);
     Task<IEnumerable<BuildingPostDTO>> GetBuildingPostsByPaginationAsync(int  pageNumber, int pageSize);
+    Task<IEnumerable<BuildingPostDTO>> SearchBuildingPostsAsync(string searchTerm);
 }
