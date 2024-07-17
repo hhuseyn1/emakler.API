@@ -29,7 +29,6 @@ public class UserRepository : IUserRepository
                 Id = Guid.NewGuid(),
                 UserMail = addUserDto.UserMail,
                 ContactNumber = addUserDto.ContactNumber,
-                UserPassword = addUserDto.Password,
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
                 OtpCode = null,
@@ -39,7 +38,7 @@ public class UserRepository : IUserRepository
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("User added successfully");
+            _logger.LogInformation("User added successfully with email: {Email}", addUserDto.UserMail);
         }
         catch (Exception ex)
         {
@@ -56,7 +55,7 @@ public class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving the user by username");
+            _logger.LogError(ex, "An error occurred while retrieving the user by username: {UserMail}", userMail);
             throw;
         }
     }
@@ -69,7 +68,7 @@ public class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving the user by ID");
+            _logger.LogError(ex, "An error occurred while retrieving the user by ID: {UserId}", userId);
             throw;
         }
     }
@@ -82,7 +81,7 @@ public class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving the user by contact number");
+            _logger.LogError(ex, "An error occurred while retrieving the user by contact number: {ContactNumber}", contactNumber);
             throw;
         }
     }
@@ -123,16 +122,15 @@ public class UserRepository : IUserRepository
                 CreatePasswordHash(updateUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
-                user.UserPassword = updateUserDto.Password;
             }
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("User updated successfully");
+            _logger.LogInformation("User updated successfully with email: {UserMail}", updateUserDto.UserMail);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while updating the user");
+            _logger.LogError(ex, "An error occurred while updating the user with email: {UserMail}", updateUserDto.UserMail);
             throw;
         }
     }
@@ -146,16 +144,16 @@ public class UserRepository : IUserRepository
             {
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("User deleted successfully");
+                _logger.LogInformation("User deleted successfully with ID: {UserId}", userId);
             }
             else
             {
-                _logger.LogWarning("User not found");
+                _logger.LogWarning("User not found with ID: {UserId}", userId);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while deleting the user");
+            _logger.LogError(ex, "An error occurred while deleting the user with ID: {UserId}", userId);
             throw;
         }
     }

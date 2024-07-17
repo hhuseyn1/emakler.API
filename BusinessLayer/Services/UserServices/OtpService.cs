@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
 using BusinessLayer.Interfaces.UserServices;
+using Confluent.Kafka;
 using DataAccessLayer.Interfaces;
 using DTO.User;
 using Microsoft.Extensions.Configuration;
@@ -10,17 +11,16 @@ using Twilio.Types;
 
 namespace BusinessLayer.Services;
 
-public class OtpService : IOtpService
+public class OtpService : BaseService, IOtpService
 {
     private readonly IUserRepository _userRepository;
-    private readonly ILogger<OtpService> _logger;
     private readonly IConfiguration _configuration;
     private readonly ConcurrentDictionary<string, (string OtpCode, DateTime CreatedAt)> _otpStore = new();
 
     public OtpService(IUserRepository userRepository, ILogger<OtpService> logger, IConfiguration configuration)
+        : base(logger)
     {
         _userRepository = userRepository;
-        _logger = logger;
         _configuration = configuration;
     }
 
@@ -37,7 +37,8 @@ public class OtpService : IOtpService
             {
                 ContactNumber = user.ContactNumber,
                 OtpCode = otp,
-                OtpCreatedTime = user.OtpCreatedTime
+                OtpCreatedTime = user.OtpCreatedTime,
+                IsValidate = user.IsValidate
             });
 
             var fromPhoneNumber = _configuration["Twilio:PhoneNumber"];

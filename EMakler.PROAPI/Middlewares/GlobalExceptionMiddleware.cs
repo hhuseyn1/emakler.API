@@ -1,9 +1,7 @@
-﻿using BusinessLayer.Exceptions;
-using DataAccessLayer.Exceptions;
-using EntityLayer.Entities;
-using System.Net;
+﻿using System.Net;
+using System.Text.Json;
 
-namespace EMakler.PROAPI.Middlewares; 
+namespace EMakler.PROAPI.Middlewares;
 
 public class GlobalExceptionMiddleware
 {
@@ -16,54 +14,25 @@ public class GlobalExceptionMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext httpContext)
     {
         try
         {
-            await _next(context);
+            await _next(httpContext);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception has occurred.");
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(httpContext, ex);
         }
     }
 
-    private Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        var response = context.Response;
-        var errorResponse = new ErrorResponse
-        {
-            Message = "An unexpected error occurred.",
-            Detail = exception.Message
-        };
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        switch (exception)
-        {
-            case EntityNotFoundException entityNotFoundException:
-                response.StatusCode = (int)HttpStatusCode.NotFound;
-                errorResponse.Message = entityNotFoundException.Message;
-                break;
-            case DatabaseConnectionException databaseConnectionException:
-                response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                errorResponse.Message = databaseConnectionException.Message;
-                break;
-            case BusinessRuleException businessRuleException:
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.Message = businessRuleException.Message;
-                break;
-            case ValidationException validationException:
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.Message = validationException.Message;
-                break;
-            default:
-                response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                break;
-        }
-
-        _logger.LogError(exception, $"Error occurred: {errorResponse.Message}");
-        return context.Response.WriteAsJsonAsync(errorResponse);
+        var result = JsonSerializer.Serialize(new { message = exception.Message });
+        return context.Response.WriteAsync(result);
     }
 }
-

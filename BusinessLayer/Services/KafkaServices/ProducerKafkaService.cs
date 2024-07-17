@@ -2,6 +2,7 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 
+namespace BusinessLayer.Services;
 public class ProducerKafkaService : IProducerKafkaService
 {
     private readonly string _bootstrapServers;
@@ -33,6 +34,7 @@ public class ProducerKafkaService : IProducerKafkaService
         catch (ProduceException<string, string> e)
         {
             _logger.LogError("Delivery failed: {Reason}", e.Error.Reason);
+            throw;  
         }
     }
 }

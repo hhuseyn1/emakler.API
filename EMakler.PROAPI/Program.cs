@@ -21,10 +21,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
 }
-else
-{
-    app.UseMiddleware<GlobalExceptionMiddleware>();
-}
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseStaticFiles();
 app.UseRouting();

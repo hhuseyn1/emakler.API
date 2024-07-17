@@ -27,6 +27,8 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"AddBuildingPostAsync method called with BuildingPostDTO: {buildingPostDTO}");
+
             var building = _mapper.Map<Building>(buildingPostDTO.Building);
             var buildingPost = new BuildingPost
             {
@@ -37,13 +39,14 @@ public class BuildingService : IBuildingService
             };
             await _buildingRepository.AddAsync(buildingPost);
 
-            // Log and produce Kafka message
-            _logger.LogInformation("BuildingPost added with Id: {Id}", buildingPost.Building.Id);
+            _logger.LogInformation($"Successfully added BuildingPost with Id: {buildingPost.Building.Id}");
+
             await _producerKafkaService.ProduceAsync(buildingPost.Building.Id.ToString(), "BuildingPost added");
+            _logger.LogInformation($"Kafka message sent for BuildingPost added with Id: {buildingPost.Building.Id}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while adding BuildingPost.");
+            _logger.LogError(ex, $"Error occurred while adding BuildingPost with BuildingPostDTO: {buildingPostDTO}");
             throw;
         }
     }
@@ -52,12 +55,21 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"GetBuildingPostByIdAsync method called with Id: {id}");
+
             var buildingPost = await _buildingRepository.GetByIdAsync(id);
+            if (buildingPost == null)
+            {
+                _logger.LogWarning($"BuildingPost with Id: {id} not found.");
+                throw new KeyNotFoundException("BuildingPost not found.");
+            }
+
+            _logger.LogInformation($"Successfully retrieved BuildingPost with Id: {id}");
             return _mapper.Map<BuildingPostDTO>(buildingPost);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving BuildingPost with Id: {Id}", id);
+            _logger.LogError(ex, $"Error occurred while retrieving BuildingPost with Id: {id}");
             throw;
         }
     }
@@ -66,7 +78,11 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation("GetAllBuildingPostsAsync method called.");
+
             var buildingPosts = await _buildingRepository.GetAllAsync();
+            _logger.LogInformation($"Successfully retrieved all BuildingPosts. Count: {buildingPosts.Count()}");
+
             return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
         }
         catch (Exception ex)
@@ -80,12 +96,16 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"GetBuildingPostsByFilterAsync method called with filter: {filter}");
+
             var buildingPosts = await _buildingRepository.GetByFilterAsync(filter);
+            _logger.LogInformation($"Successfully retrieved BuildingPosts by filter. Count: {buildingPosts.Count()}");
+
             return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving BuildingPosts by filter.");
+            _logger.LogError(ex, $"Error occurred while retrieving BuildingPosts by filter: {filter}");
             throw;
         }
     }
@@ -94,10 +114,12 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"UpdateBuildingPostAsync method called with Id: {id} and BuildingPostDTO: {buildingPostDTO}");
+
             var existingPost = await _buildingRepository.GetByIdAsync(id);
             if (existingPost == null)
             {
-                _logger.LogWarning("BuildingPost with Id: {Id} not found for update.", id);
+                _logger.LogWarning($"BuildingPost with Id: {id} not found for update.");
                 throw new KeyNotFoundException("BuildingPost not found.");
             }
 
@@ -105,13 +127,14 @@ public class BuildingService : IBuildingService
             existingPost.UpdatedAt = DateTime.UtcNow;
             await _buildingRepository.UpdateAsync(existingPost);
 
-            // Log Kafka message
-            _logger.LogInformation("BuildingPost updated with Id: {Id}", id);
+            _logger.LogInformation($"Successfully updated BuildingPost with Id: {id}");
+
             await _producerKafkaService.ProduceAsync(id.ToString(), "BuildingPost updated");
+            _logger.LogInformation($"Kafka message sent for BuildingPost updated with Id: {id}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating BuildingPost with Id: {Id}", id);
+            _logger.LogError(ex, $"Error occurred while updating BuildingPost with Id: {id} and BuildingPostDTO: {buildingPostDTO}");
             throw;
         }
     }
@@ -120,22 +143,25 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"DeleteBuildingPostAsync method called with Id: {id}");
+
             var buildingPost = await _buildingRepository.GetByIdAsync(id);
             if (buildingPost == null)
             {
-                _logger.LogWarning("BuildingPost with Id: {Id} not found for deletion.", id);
+                _logger.LogWarning($"BuildingPost with Id: {id} not found for deletion.");
                 throw new KeyNotFoundException("BuildingPost not found.");
             }
 
             await _buildingRepository.DeleteAsync(id);
 
-            // Log Kafka message
-            _logger.LogInformation("BuildingPost deleted with Id: {Id}", id);
+            _logger.LogInformation($"Successfully deleted BuildingPost with Id: {id}");
+
             await _producerKafkaService.ProduceAsync(id.ToString(), "BuildingPost deleted");
+            _logger.LogInformation($"Kafka message sent for BuildingPost deleted with Id: {id}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while deleting BuildingPost with Id: {Id}", id);
+            _logger.LogError(ex, $"Error occurred while deleting BuildingPost with Id: {id}");
             throw;
         }
     }
@@ -144,12 +170,16 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"GetBuildingPostsByPaginationAsync method called with pageNumber: {pageNumber} and pageSize: {pageSize}");
+
             var buildingPosts = await _buildingRepository.GetByPaginationAsync(pageNumber, pageSize);
+            _logger.LogInformation($"Successfully retrieved paginated BuildingPosts. Count: {buildingPosts.Count()}");
+
             return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving paginated BuildingPosts.");
+            _logger.LogError(ex, $"Error occurred while retrieving paginated BuildingPosts with pageNumber: {pageNumber} and pageSize: {pageSize}");
             throw;
         }
     }
@@ -158,13 +188,17 @@ public class BuildingService : IBuildingService
     {
         try
         {
+            _logger.LogInformation($"SearchBuildingPostsAsync method called with searchTerm: {searchTerm}");
+
             var buildingPosts = await _buildingRepository.SearchAsync(searchTerm);
+            _logger.LogInformation($"Successfully searched BuildingPosts with searchTerm: {searchTerm}. Count: {buildingPosts.Count()}");
+
             return _mapper.Map<IEnumerable<BuildingPostDTO>>(buildingPosts);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while searching BuildingPosts.");
+            _logger.LogError(ex, $"Error occurred while searching BuildingPosts with searchTerm: {searchTerm}");
             throw;
         }
-        }
+    }
 }

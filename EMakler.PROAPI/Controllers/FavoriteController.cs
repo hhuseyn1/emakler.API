@@ -1,64 +1,64 @@
-﻿using DataAccessLayer.Concrete;
-using DTO;
-using EntityLayer.Entities;
-using Microsoft.AspNetCore.Authorization;
+﻿using BusinessLayer.Interfaces.UserServices;
+using DTO.User;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace EMakler.PROAPI.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class FavoritesController : ControllerBase
+[ApiController]
+public class FavController : ControllerBase
 {
-    private readonly Context _context;
+    private readonly IFavoriteService _favService;
+    private readonly ILogger<FavController> _logger;
 
-    public FavoritesController(Context context)
+    public FavController(IFavoriteService favService, ILogger<FavController> logger)
     {
-        _context = context;
+        _favService = favService;
+        _logger = logger;
     }
 
     [HttpPost]
-    [Authorize] 
-    public async Task<IActionResult> AddToFavorite([FromBody] FavoriteDto favoriteDto)
+    public async Task<IActionResult> AddToFavorites(AddToFavoritesRequest request)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        var favorite = await _context.UserFavorites
-            .FirstOrDefaultAsync(f => f.UserId == userId && f.BuildingId == favoriteDto.BuildingId);
-
-        if (favorite == null)
+        try
         {
-            favorite = new UserFavorite
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                BuildingId = favoriteDto.BuildingId
-            };
-
-            _context.UserFavorites.Add(favorite);
-            await _context.SaveChangesAsync();
+            await _favService.AddToFavoritesAsync(request);
+            return Ok("Added to favorites.");
         }
-
-        return Ok(new { isFavorite = true });
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding to favorites.");
+            return StatusCode(500, "Internal server error.");
+        }
     }
 
-    [HttpDelete("{buildingId}")]
-    [Authorize] 
-    public async Task<IActionResult> RemoveFromFavorite(Guid buildingId)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> RemoveFromFavorites(Guid id)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        var favorite = await _context.UserFavorites
-            .FirstOrDefaultAsync(f => f.UserId == userId && f.BuildingId == buildingId);
-
-        if (favorite != null)
+        try
         {
-            _context.UserFavorites.Remove(favorite);
-            await _context.SaveChangesAsync();
+            await _favService.RemoveFromFavoritesAsync(id);
+            return Ok("Removed from favorites.");
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing from favorites.");
+            return StatusCode(500, "Internal server error.");
+        }
+    }
 
-        return Ok(new { isFavorite = false });
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> GetUserFavorites(Guid userId)
+    {
+        try
+        {
+            var favorites = await _favService.GetUserFavoritesAsync(userId);
+            return Ok(favorites);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user favorites.");
+            return StatusCode(500, "Internal server error.");
+        }
     }
 }

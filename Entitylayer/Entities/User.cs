@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace EntityLayer.Entities;
 
 public partial class User
@@ -15,7 +13,6 @@ public partial class User
 
     public DateTime OtpCreatedTime { get; set; }
     public bool IsValidate { get; set; }
-    public string UserPassword { get; set; } = null!;
     public byte[] PasswordHash { get; set; } = null!;
     public byte[] PasswordSalt { get; set; } = null!;
 }
