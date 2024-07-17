@@ -15,6 +15,7 @@ namespace DataAccessLayer.Concrete
         {
         }
 
+        public virtual DbSet<UserFavorite> UserFavorites { get; set; }
         public virtual DbSet<Building> Buildings { get; set; }
         public virtual DbSet<BuildingPost> BuildingPosts { get; set; }
         public virtual DbSet<BuildingType> BuildingTypes { get; set; }
