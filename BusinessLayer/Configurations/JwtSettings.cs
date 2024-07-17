@@ -1,4 +1,4 @@
-﻿namespace EMakler.PROAPI.Configurations;
+﻿namespace BusinessLayer.Configurations;
 
 public class JwtSettings
 {
