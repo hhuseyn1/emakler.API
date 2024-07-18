@@ -15,9 +15,9 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
-    private readonly ILogger _logger;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger logger)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _configuration = configuration;
