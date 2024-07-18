@@ -1,6 +1,7 @@
-﻿namespace EMakler.PROAPI.Configurations;
-
-public class JwtSettings
+﻿namespace EMakler.PROAPI.Configurations
 {
-    public string Secret { get; set; }
+    public class JwtSettings
+    {
+        public string Secret { get; set; }
+    }
 }

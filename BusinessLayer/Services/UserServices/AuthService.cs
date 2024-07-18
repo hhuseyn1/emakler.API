@@ -6,22 +6,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace BusinessLayer.Services.UserServices;
 
-public class AuthService : IAuthService
+public class AuthService : BaseService, IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<AuthService> _logger;
+    private readonly ILogger _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger<AuthService> logger)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger logger)
     {
         _userRepository = userRepository;
         _configuration = configuration;
-        _logger = logger;
     }
 
     public async Task<string> Login(UserLoginRequest request)
@@ -74,21 +72,4 @@ public class AuthService : IAuthService
         await _userRepository.UpdateUserAsync(updateUserDto);
         return true;
     }
-
-
-
-    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-    {
-        using (var hmac = new HMACSHA512(storedSalt))
-        {
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != storedHash[i]) return false;
-            }
-        }
-        return true;
-    }
-
-   
 }

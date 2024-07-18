@@ -1,11 +1,9 @@
 ﻿using BusinessLayer.Interfaces;
-using BusinessLayer.Interfaces.KafkaServices;
 using BusinessLayer.Interfaces.UserServices;
 using DTO.User;
 using EMakler.PROAPI.Configurations;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,20 +20,17 @@ public class AuthController : ControllerBase
     private readonly IUserService _userService;
     private readonly IOtpService _otpService;
     private readonly JwtSettings _jwtSettings;
-    private readonly IProducerKafkaService _producerKafkaService;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IUserService userService,
         IOtpService otpService,
         IOptions<JwtSettings> jwtSettings,
-        IProducerKafkaService producerKafkaService,
         ILogger<AuthController> logger)
     {
         _userService = userService;
         _otpService = otpService;
         _jwtSettings = jwtSettings.Value;
-        _producerKafkaService = producerKafkaService;
         _logger = logger;
     }
 
@@ -90,7 +85,6 @@ public class AuthController : ControllerBase
         }
     }
 
-
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginRequest loginRequest)
     {
@@ -118,11 +112,11 @@ public class AuthController : ControllerBase
         }
     }
 
-    private string GenerateJwtToken(string Email)
+    private string GenerateJwtToken(string email)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, Email),
+            new Claim(JwtRegisteredClaimNames.Sub, email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -132,7 +126,7 @@ public class AuthController : ControllerBase
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.AddDays(10),
             SigningCredentials = creds
         };
 
