@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("register")]
+    [HttpPost("Register")]
     public async Task<IActionResult> Register(UserRegistration userRegistration)
     {
         if (!ModelState.IsValid)
@@ -58,7 +58,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost("verify-otp")]
+    [HttpPost("Verify-Otp")]
     public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
     {
         if (!ModelState.IsValid)
@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost("login")]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login(UserLoginRequest loginRequest)
     {
         if (!ModelState.IsValid)
@@ -135,7 +135,7 @@ public class AuthController : ControllerBase
         return tokenHandler.WriteToken(token);
     }
 
-    [HttpPost("logout")]
+    [HttpPost("Logout")]
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

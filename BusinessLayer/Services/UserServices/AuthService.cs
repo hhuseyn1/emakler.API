@@ -14,9 +14,10 @@ public class AuthService : BaseService, IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
-    private readonly ILogger _logger;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger logger)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration,ILogger<AuthService> logger)
+        :base(logger)
     {
         _userRepository = userRepository;
         _configuration = configuration;
@@ -65,8 +66,8 @@ public class AuthService : BaseService, IAuthService
             ContactNumber = user.ContactNumber,
             OtpCode = null,
             OtpCreatedTime = DateTime.MinValue,
-            IsValidate = true,
-            Password = user.UserPassword
+            IsValidate = true
+            //Password = user.UserPassword
         };
 
         await _userRepository.UpdateUserAsync(updateUserDto);

@@ -17,37 +17,51 @@ public class UserController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(UserRegistration userRegistration)
+
+    [HttpPost("{userId}/Confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(Guid userId)
     {
         try
         {
-            await _userService.RegisterUser(userRegistration);
-            return Ok("User registered successfully.");
+            await _userService.ConfirmEmailAsync(userId);
+            return Ok("Email confirmed successfully.");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error registering user.");
             return StatusCode(500, "Internal server error.");
         }
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(UserLoginRequest loginRequest)
+    [HttpPost("ChangePassword")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {
         try
         {
-            var isValidUser = await _userService.ValidateUserAsync(loginRequest.Email, loginRequest.Password);
-            if (!isValidUser)
-            {
-                return Unauthorized("Invalid email or password.");
-            }
-            return Ok("User logged in successfully.");
+            await _userService.ChangePasswordAsync(request);
+            return Ok(new { message = "Password changed successfully." });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error logging in user.");
-            return StatusCode(500, "Internal server error.");
+            return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPut("{userId}")]
+    public async Task<IActionResult> UpdateUser(Guid userId, UpdateUserDto updateUserDto)
+    {
+        await _userService.UpdateUserAsync(userId, updateUserDto);
+        return Ok(new { Message = "User updated successfully." });
+    }
+
+    [HttpDelete("{userId}")]
+    public async Task<IActionResult> DeleteUser(Guid userId)
+    {
+        await _userService.DeleteUserAsync(userId);
+        return Ok(new { Message = "User deleted successfully." });
+    }
+
 }

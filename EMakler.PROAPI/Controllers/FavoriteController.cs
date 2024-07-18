@@ -17,7 +17,7 @@ public class FavController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost]
+    [HttpPost("Favorites")]
     public async Task<IActionResult> AddToFavorites(AddToFavoritesRequest request)
     {
         try

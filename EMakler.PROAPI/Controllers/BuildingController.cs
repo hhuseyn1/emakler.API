@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EMakler.PROAPI.Controllers;
 
-[ApiController]
+
 [Route("api/[controller]")]
+[ApiController]
 public class BuildingController : ControllerBase
 {
     private readonly IBuildingService _buildingService;
@@ -116,7 +117,7 @@ public class BuildingController : ControllerBase
         }
     }
 
-    [HttpGet("paged")]
+    [HttpGet("Paged")]
     public async Task<IActionResult> GetPagedBuildings(int pageNumber, int pageSize)
     {
         try
@@ -130,7 +131,7 @@ public class BuildingController : ControllerBase
             return StatusCode(500, "Internal server error.");
         }
     }
-    [HttpGet("search")]
+    [HttpGet("Search")]
     public async Task<IActionResult> SearchBuildingPosts([FromQuery] string searchTerm)
     {
         try

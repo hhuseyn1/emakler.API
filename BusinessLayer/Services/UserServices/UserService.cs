@@ -46,7 +46,12 @@ public class UserService : BaseService, IUserService
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
-        await _userRepository.AddUserAsync(user);
+        await _userRepository.AddUserAsync(new AddUserDto
+        {
+            UserMail = user.UserMail,
+            ContactNumber = user.ContactNumber,
+            Password = userRegistration.Password
+        });
 
         await _produceKafkaService.ProduceAsync(user.Id.ToString(), "User Registered");
 
@@ -76,7 +81,7 @@ public class UserService : BaseService, IUserService
             OtpCode = updateUserDto.OtpCode ?? user.OtpCode,
             OtpCreatedTime = updateUserDto.OtpCreatedTime ?? user.OtpCreatedTime,
             IsValidate = updateUserDto.IsValidate ?? user.IsValidate,
-            Password = updateUserDto.Password ?? user.UserPassword
+            Password = updateUserDto.Password
         });
 
         _logger.LogInformation($"User updated with ID: {userId}");
@@ -152,8 +157,8 @@ public class UserService : BaseService, IUserService
             ContactNumber = user.ContactNumber,
             OtpCode = user.OtpCode,
             OtpCreatedTime = user.OtpCreatedTime,
-            IsValidate = true,
-            Password = user.UserPassword
+            IsValidate = true
+            //Password = user.UserPassword  
         });
 
         _logger.LogInformation($"User email confirmed for ID: {userId}");
