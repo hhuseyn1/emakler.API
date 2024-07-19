@@ -21,10 +21,10 @@ namespace BusinessLayer.Validators
                 .EmailAddress()
                 .WithMessage("Email is incorrect");
 
-            RuleFor(x => x.UserPassword)
-                .NotEmpty()
-                .MinimumLength(8).When(x => x.UserPassword.Length > 0)
-                .WithMessage("Password must be longer than 8 characters");
+            //RuleFor(x => x.UserPassword)
+            //    .NotEmpty()
+            //    .MinimumLength(8).When(x => x.UserPassword.Length > 0)
+            //    .WithMessage("Password must be longer than 8 characters");
 
 
                      

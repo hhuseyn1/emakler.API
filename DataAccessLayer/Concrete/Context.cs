@@ -439,9 +439,9 @@ namespace DataAccessLayer.Concrete
                 entity.Property(e => e.IsValidate)
                     .HasColumnName("is_validate");
 
-                entity.Property(e => e.UserPassword)
-                    .HasMaxLength(255) 
-                    .HasColumnName("user_password");
+                //entity.Property(e => e.UserPassword)
+                //    .HasMaxLength(255) 
+                //    .HasColumnName("user_password");
 
                 entity.Property(e => e.PasswordHash)
                     .HasColumnName("password_hash");

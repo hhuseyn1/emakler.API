@@ -70,7 +70,7 @@ public class BuildingController : ControllerBase
         }
     }
 
-    [HttpGet("GetAllBuildingPostsW/Filter")]
+    [HttpPost("GetAllBuildingPosts/Filter")]
     public async Task<IActionResult> GetBuildingPostsByFilter([FromBody] BuildingFilter filter)
     {
         try

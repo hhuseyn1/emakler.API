@@ -161,7 +161,7 @@ public class BuildingRepository : IBuildingRepository
         {
             return await _context.BuildingPosts
                 .Include(bp => bp.Building)
-                .Where(bp => bp.Building.Village.Contains(searchTerm) || bp.Building.District.Contains(searchTerm))
+                .Where(bp => bp.Building.Village.Contains(searchTerm) || bp.Building.City.Contains(searchTerm))
                 .ToListAsync();
         }
         catch (Exception ex)
