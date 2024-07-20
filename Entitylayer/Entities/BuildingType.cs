@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EntityLayer.Entities;
 
-namespace EntityLayer.Entities;
-
-public partial class BuildingType
+public partial class BuildingType : BaseEntity
 {
-    public Guid IdBuildingType { get; set; }
 
     public string? BuildingTypeName { get; set; }
 

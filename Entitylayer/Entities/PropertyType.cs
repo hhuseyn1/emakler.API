@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EntityLayer.Entities;
 
-namespace EntityLayer.Entities;
-
-public partial class PropertyType
+public partial class PropertyType : BaseEntity
 {
-    public Guid IdPropertyType { get; set; }
-
     public string? PropertyTypeName { get; set; }
 }

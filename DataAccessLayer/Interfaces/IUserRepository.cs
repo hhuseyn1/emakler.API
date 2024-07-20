@@ -1,15 +1,15 @@
-﻿using DTO.User;
-using EntityLayer.Entities;
+﻿using EntityLayer.Entities;
+using System.Linq.Expressions;
 
 namespace DataAccessLayer.Interfaces;
 
 public interface IUserRepository
 {
-    Task AddUserAsync(AddUserDto addUserDto);
-    Task<User> GetUserByUsernameAsync(string userMail);
     Task<User> GetUserByIdAsync(Guid userId);
-    Task<User> GetUserByContactNumberAsync(string contactNumber);
-    Task UpdateUserAsync(UpdateUserDto updateUserDto);
-    Task DeleteUserAsync(Guid userId);
+    Task<User> GetByPredicateAsync(Expression<Func<User, bool>> predicate);
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task AddUserAsync(User user);
+    Task UpdateUserAsync(User user);
+    Task DeleteUserAsync(User user);
 }
 

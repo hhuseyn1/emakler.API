@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EntityLayer.Entities;
 
-namespace EntityLayer.Entities;
-
-public partial class Region
+public partial class Region : BaseEntity
 {
-    public Guid? IdRegion { get; set; }
-
     public string? RegionCode { get; set; }
 
     public string? RegionName { get; set; }

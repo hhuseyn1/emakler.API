@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EntityLayer.Entities;
 
-namespace EntityLayer.Entities;
-
-public partial class Metro
+public partial class Metro : BaseEntity
 {
-    public Guid IdMetro { get; set; }
-
     public string? MetroName { get; set; }
 
     public Guid? FkIdRegion { get; set; }

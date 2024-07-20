@@ -9,8 +9,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-builder.Services.AddBLServices(builder.Configuration); 
 builder.Services.AddDALServices(builder.Configuration);
+builder.Services.AddBLServices(builder.Configuration); 
 
 
 var app = builder.Build();

@@ -1,46 +1,36 @@
-﻿using BusinessLayer.Interfaces.UserServices;
-using BusinessLayer.Interfaces;
-using BusinessLayer.Services.UserServices;
-using BusinessLayer.Services;
-using Microsoft.Extensions.DependencyInjection;
-using BusinessLayer.Interfaces.KafkaServices;
-using BusinessLayer.Services.KafkaServices;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using BusinessLayer.Configurations;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using BusinessLayer.Validators;
 using EMakler.PROAPI.Entities.Profiles;
-
+using BusinessLayer.Interfaces.AuthService;
+using BusinessLayer.Services.AuthService;
+using BusinessLayer.Services.JwtService;
+using FluentValidation.AspNetCore;
+using BusinessLayer.Validators.User;
+using BusinessLayer.Configurations;
+using BusinessLayer.Services.UserServices;
+using BusinessLayer.Interfaces.UserServices;
+using BusinessLayer.Services.PostServices;
+using BusinessLayer.Interfaces.PostServices;
 namespace BusinessLayer;
 
 public static class ServiceRegistration
 {
-    public static IServiceCollection AddBLServices(this IServiceCollection services, IConfiguration builder)
+    public static IServiceCollection AddBLServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IUserService, UserService>();
-        services.AddTransient<IAuthService, AuthService>();
-        services.AddTransient<IOtpService, OtpService>();
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-        services.AddTransient<IBuildingService, BuildingService>();
+        services.AddTransient<JWTService>();
 
-        services.AddScoped<IProducerKafkaService>(provider =>
-        {
-            var kafkaSettings = provider.GetRequiredService<IOptions<KafkaSettings>>().Value;
-            return new ProducerKafkaService(kafkaSettings.BrokerUrl, kafkaSettings.TopicName,
-                provider.GetRequiredService<ILogger<ProducerKafkaService>>());
-        });
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
-        services.AddScoped<IConsumerKafkaService>(provider =>
-        {
-            var kafkaSettings = provider.GetRequiredService<IOptions<KafkaSettings>>().Value;
-            return new ConsumerKafkaService(kafkaSettings.BrokerUrl, kafkaSettings.TopicName, kafkaSettings.GroupId,
-                provider.GetRequiredService<ILogger<ConsumerKafkaService>>());
-        });
+        services.AddScoped<IPostService, PostService>();
+
+        services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UserRegisterRequestValidator>());
+        services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserDtoValidator>());
+        services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UpdateUserDtoValidator>());
 
         services.AddAutoMapper(typeof(MappingProfile));
-
-        services.AddScoped<BuildingFilterValidator>();
 
         return services;
     }

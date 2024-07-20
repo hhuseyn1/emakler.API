@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EntityLayer.Entities;
 
-namespace EntityLayer.Entities;
-
-public partial class Document
+public partial class Document : BaseEntity
 {
-    public Guid IdDocument { get; set; }
-
     public string? DocumentName { get; set; }
 
     public string? Keyword { get; set; }

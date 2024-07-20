@@ -26,337 +26,290 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AdType")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasColumnName("ad_type");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Area")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("area");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("city");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("District")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("district");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Metro")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("metro");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("price");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RoomCount")
-                        .HasColumnType("int")
-                        .HasColumnName("room_count");
+                        .HasColumnType("int");
 
                     b.Property<string>("SellerType")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasColumnName("seller_type");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Village")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("village");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("building", (string)null);
+                    b.ToTable("Buildings");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.BuildingPost", b =>
                 {
-                    b.Property<Guid>("BuildingId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("building_id");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                    b.Property<Guid>("BuildingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_active");
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.HasKey("BuildingId");
+                    b.HasKey("Id");
 
-                    b.ToTable("building_post", (string)null);
+                    b.HasIndex("BuildingId");
+
+                    b.ToTable("BuildingPosts");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.BuildingType", b =>
                 {
-                    b.Property<Guid>("IdBuildingType")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_building_type");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BuildingTypeName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("building_type_name");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("keyword");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdBuildingType");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex(new[] { "IdBuildingType" }, "IX_building_type");
+                    b.HasKey("Id");
 
-                    b.ToTable("building_type", (string)null);
+                    b.ToTable("BuildingTypes");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.Document", b =>
                 {
-                    b.Property<Guid>("IdDocument")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_document");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DocumentName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("document_name");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("keyword");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword01")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_01");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword02")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_02");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword03")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_03");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdDocument");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("document", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("Documents");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.Metro", b =>
                 {
-                    b.Property<Guid>("IdMetro")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_metro");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("FkIdRegion")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_region");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Keyword01")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_01");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword02")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_02");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword03")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_03");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword04")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_04");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword05")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_05");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MetroName")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("metro_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdMetro");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex(new[] { "FkIdRegion" }, "IX_fk_id_region");
+                    b.HasKey("Id");
 
-                    b.ToTable("metro", (string)null);
+                    b.ToTable("Metros");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.OperationType", b =>
                 {
-                    b.Property<Guid>("IdOperationType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_operation_type");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("keyword");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OperationTypeName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("operation_type_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdOperationType");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("operation_type", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("OperationTypes");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.OwnerType", b =>
                 {
-                    b.Property<Guid>("IdOwnerType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_owner_type");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("keyword");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerTypeName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("owner_type_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdOwnerType");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("owner_type", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("OwnerTypes");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.Property", b =>
                 {
-                    b.Property<Guid>("IdProperty")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_property");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
-                        .HasColumnType("ntext")
-                        .HasColumnName("address");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ApprovmentMessage")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("approvment_message");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ApprovmentStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("approvment_status");
+                        .HasColumnType("int");
 
                     b.Property<double?>("Area")
-                        .HasColumnType("float")
-                        .HasColumnName("area");
+                        .HasColumnType("float");
 
                     b.Property<string>("Code")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("code");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CpName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("cp_name");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CpPhoneNumber01")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("cp_phone_number_01");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CpPhoneNumber02")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("cp_phone_number_02");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CpPhoneNumber03")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("cp_phone_number_03");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Data")
-                        .HasColumnType("ntext")
-                        .HasColumnName("data");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EX")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("ex");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EY")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("ey");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("FkIdBuildingType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_building_type");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdCity")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_city");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdCurrency")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_currency");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdDocument")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_document");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdLink")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdMetro")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_metro");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdOperationType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_operation_type");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdOwnerType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_owner_type");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdPropertyType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_property_type");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdRepair")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_repair");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdRoom")
                         .HasColumnType("uniqueidentifier");
@@ -365,264 +318,220 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FkIdTarget")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("fk_id_target");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("Floor")
-                        .HasColumnType("int")
-                        .HasColumnName("floor");
+                        .HasColumnType("int");
 
                     b.Property<int?>("FloorOf")
-                        .HasColumnType("int")
-                        .HasColumnName("floor_of");
+                        .HasColumnType("int");
 
                     b.Property<double?>("GeneralArea")
-                        .HasColumnType("float")
-                        .HasColumnName("general_area");
+                        .HasColumnType("float");
 
                     b.Property<string>("Images")
-                        .HasColumnType("ntext")
-                        .HasColumnName("images");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("InsertDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("insert_date");
+                        .HasColumnType("datetime2");
 
                     b.Property<double?>("Price")
-                        .HasColumnType("float")
-                        .HasColumnName("price");
+                        .HasColumnType("float");
 
                     b.Property<double?>("UnitPrice")
-                        .HasColumnType("float")
-                        .HasColumnName("unit_price");
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UploadMessage")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("upload_message");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UploadStatus")
-                        .HasColumnType("int")
-                        .HasColumnName("upload_status");
+                        .HasColumnType("int");
 
-                    b.HasKey("IdProperty");
+                    b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ApprovmentStatus" }, "IX_property_approvment_status");
-
-                    b.HasIndex(new[] { "Code" }, "IX_property_code")
-                        .IsDescending();
-
-                    b.HasIndex(new[] { "CpPhoneNumber01" }, "IX_property_cp_phone_number_01");
-
-                    b.HasIndex(new[] { "CpPhoneNumber02" }, "IX_property_cp_phone_number_02");
-
-                    b.HasIndex(new[] { "CpPhoneNumber03" }, "IX_property_cp_phone_number_03");
-
-                    b.HasIndex(new[] { "FkIdLink" }, "IX_property_fk_id_link");
-
-                    b.HasIndex(new[] { "FkIdOwnerType" }, "IX_property_fk_id_owner_type");
-
-                    b.HasIndex(new[] { "FkIdSource" }, "IX_property_fk_id_source");
-
-                    b.HasIndex(new[] { "InsertDate" }, "IX_property_insert_date")
-                        .IsDescending();
-
-                    b.HasIndex(new[] { "UploadStatus" }, "IX_property_upload_status");
-
-                    b.ToTable("property", null, t =>
-                        {
-                            t.HasTrigger("trg_insert_agency_phone_number");
-                        });
-
-                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                    b.ToTable("Properties");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.PropertyType", b =>
                 {
-                    b.Property<Guid>("IdPropertyType")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_property_type");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PropertyTypeName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("property_type_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdPropertyType");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("property_type", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("PropertyTypes");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.Region", b =>
                 {
-                    b.Property<Guid?>("IdRegion")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_region");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword01")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_01");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword02")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_02");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword03")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_03");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegionCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("region_code");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegionName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("region_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdRegion");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("region", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("Regions");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.RegionUnit01", b =>
                 {
-                    b.Property<Guid?>("IdRegion")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_region");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword01")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_01");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword02")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_02");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keyword03")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("keyword_03");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegionCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("region_code");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegionName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("region_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdRegion");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("region_unit_01", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("RegionUnit01s");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.RepairRate", b =>
                 {
-                    b.Property<Guid>("IdRepairRate")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_repair_rate");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("IsActive")
-                        .HasColumnType("int")
-                        .HasColumnName("is_active");
+                        .HasColumnType("int");
 
                     b.Property<string>("RepairRateName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("repair_rate_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdRepairRate");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("repair_rate", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("RepairRates");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.RoomCount", b =>
                 {
-                    b.Property<Guid>("IdRoomCount")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_room_count");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Keyword")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("keyword");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoomCountName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("room_count_name");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdRoomCount");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
-                    b.ToTable("room_count", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("RoomCounts");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContactNumber")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("contact_number");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsValidate")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_validate");
+                        .HasColumnType("bit");
 
                     b.Property<string>("OtpCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasColumnName("otp_code");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("OtpCreatedTime")
-                        .HasColumnType("datetime")
-                        .HasColumnName("otp_created_time");
+                        .HasColumnType("datetime2");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("password_hash");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("password_salt");
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserMail")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("user_mail");
-
-                    b.Property<string>("UserPassword")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("user_password");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("user", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("EntityLayer.Entities.BuildingPost", b =>
                 {
                     b.HasOne("EntityLayer.Entities.Building", "Building")
-                        .WithOne()
-                        .HasForeignKey("EntityLayer.Entities.BuildingPost", "BuildingId")
+                        .WithMany()
+                        .HasForeignKey("BuildingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
