@@ -41,9 +41,9 @@ public class PostController : ControllerBase
     }
 
     [HttpPost("CreateBuildingPost")]
-    public async Task<IActionResult> CreateBuildingPost([FromBody] CreateBuildingPostDto createBuildingPostDto)
+    public async Task<IActionResult> CreateBuildingPost([FromForm] CreateBuildingPostDto createBuildingPostDto, [FromForm] IList<IFormFile> files)
     {
-        var buildingPost = await _buildingPostService.CreateBuildingPostAsync(createBuildingPostDto);
+        var buildingPost = await _buildingPostService.CreateBuildingPostAsync(createBuildingPostDto, files);
         return CreatedAtAction(nameof(GetBuildingPostById), new { id = buildingPost.Id }, buildingPost);
     }
 

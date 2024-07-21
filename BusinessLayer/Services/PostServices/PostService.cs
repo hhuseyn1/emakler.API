@@ -7,29 +7,34 @@ using EntityLayer.Entities;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace BusinessLayer.Services.PostServices;
 
-public class PostService :  IPostService
+public class PostService : IPostService
 {
     private readonly IPostRepository _buildingPostRepository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateBuildingPostDto> _createBuildingPostValidator;
     private readonly IValidator<UpdateBuildingPostDto> _updateBuildingPostValidator;
     private readonly ILogger<PostService> _logger;
+    private readonly IWebHostEnvironment _hostingEnvironment;
 
     public PostService(
         IPostRepository buildingPostRepository,
         IMapper mapper,
         IValidator<CreateBuildingPostDto> createBuildingPostValidator,
         IValidator<UpdateBuildingPostDto> updateBuildingPostValidator,
-        ILogger<PostService> logger)
+        ILogger<PostService> logger,
+        IWebHostEnvironment hostingEnvironment)
     {
         _buildingPostRepository = buildingPostRepository;
         _mapper = mapper;
         _createBuildingPostValidator = createBuildingPostValidator;
         _updateBuildingPostValidator = updateBuildingPostValidator;
         _logger = logger;
+        _hostingEnvironment = hostingEnvironment;
     }
 
     public async Task<BuildingPostDto> GetBuildingPostByIdAsync(Guid id)
@@ -54,7 +59,7 @@ public class PostService :  IPostService
         return _mapper.Map<IEnumerable<BuildingPostDto>>(buildingPosts);
     }
 
-    public async Task<BuildingPostDto> CreateBuildingPostAsync(CreateBuildingPostDto createBuildingPostDto)
+    public async Task<BuildingPostDto> CreateBuildingPostAsync(CreateBuildingPostDto createBuildingPostDto, IList<IFormFile> images)
     {
         var validationResult = await _createBuildingPostValidator.ValidateAsync(createBuildingPostDto);
         if (!validationResult.IsValid)
@@ -63,8 +68,31 @@ public class PostService :  IPostService
             throw new ValidationException(validationResult.Errors);
         }
 
+        if (images.Any(img => img != null && !IsImageFile(img)))
+        {
+            _logger.LogWarning("Invalid file type. Only image files are allowed.");
+            throw new ValidationException("Invalid file type. Only image files are allowed.");
+        }
+
         var buildingPost = _mapper.Map<BuildingPost>(createBuildingPostDto);
         buildingPost.Id = Guid.NewGuid();
+
+        if (images != null && images.Count > 0)
+        {
+            var imagePaths = new List<string>();
+            foreach (var image in images)
+            {
+                var filePath = Path.Combine("uploads", buildingPost.Id.ToString(), image.FileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+                imagePaths.Add(filePath);
+            }
+            buildingPost.ImagePaths = imagePaths;
+        }
+
         await _buildingPostRepository.AddBuildingPostAsync(buildingPost);
 
         return _mapper.Map<BuildingPostDto>(buildingPost);
@@ -97,5 +125,14 @@ public class PostService :  IPostService
 
         await _buildingPostRepository.DeleteBuildingPostAsync(buildingPost);
         return true;
+    }
+
+    private bool IsImageFile(IFormFile file)
+    {
+        var validImageMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/svg+xml" };
+        var validImageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg" };
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        return validImageMimeTypes.Contains(file.ContentType) && validImageExtensions.Contains(fileExtension);
     }
 }
