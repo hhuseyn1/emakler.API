@@ -112,7 +112,7 @@ public class AuthService : IAuthService
 
     public async Task<string> SendOtpAsync(string phoneNumber)
     {
-        return await _otpService.GenerateOtpAsync(phoneNumber);
+        return await _otpService.SendOtpAsync(phoneNumber);
     }
 
     public async Task<bool> VerifyOtpAsync(string phoneNumber, string otpCode)
