@@ -11,6 +11,8 @@ using BusinessLayer.Services.UserServices;
 using BusinessLayer.Interfaces.UserServices;
 using BusinessLayer.Services.PostServices;
 using BusinessLayer.Interfaces.PostServices;
+using BusinessLayer.Services.OtpService;
+using BusinessLayer.Interfaces.OtpService;
 namespace BusinessLayer;
 
 public static class ServiceRegistration
@@ -25,6 +27,7 @@ public static class ServiceRegistration
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddScoped<IPostService, PostService>();
+        services.AddScoped<IOtpService, OtpService>();
 
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UserRegisterRequestValidator>());
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserDtoValidator>());

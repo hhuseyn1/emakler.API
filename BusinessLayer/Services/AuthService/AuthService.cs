@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Interfaces.AuthService;
+using BusinessLayer.Interfaces.OtpService;
 using BusinessLayer.Interfaces.UserServices;
 using BusinessLayer.Services.JwtService;
 using DataAccessLayer.Interfaces;
@@ -18,6 +19,7 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly IValidator<UserRegisterRequest> _registerValidator;
     private readonly IValidator<UserLoginRequest> _loginValidator;
+    private readonly IOtpService _otpService;
 
     public AuthService(
         IUserRepository userRepository,
@@ -25,7 +27,8 @@ public class AuthService : IAuthService
         ILogger<AuthService> logger,
         IValidator<UserRegisterRequest> registerValidator,
         IValidator<UserLoginRequest> loginValidator,
-        IUserService userService)
+        IUserService userService,
+        IOtpService otpService)
     {
         _userRepository = userRepository;
         _jwtService = jwtService;
@@ -33,6 +36,7 @@ public class AuthService : IAuthService
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _userService = userService;
+        _otpService = otpService;
     }
 
     public async Task<string> LoginUserAsync(UserLoginRequest request)
@@ -104,5 +108,15 @@ public class AuthService : IAuthService
 
         _logger.LogInformation($"User registered successfully: {userDto}");
         return userDto;
+    }
+
+    public async Task<string> SendOtpAsync(string phoneNumber)
+    {
+        return await _otpService.GenerateOtpAsync(phoneNumber);
+    }
+
+    public async Task<bool> VerifyOtpAsync(string phoneNumber, string otpCode)
+    {
+        return await _otpService.VerifyOtpAsync(phoneNumber, otpCode);
     }
 }
