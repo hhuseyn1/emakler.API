@@ -5,6 +5,6 @@ namespace BusinessLayer.Interfaces.AuthService;
 
 public interface IAuthService
 {
-    Task<string> LoginUserAsync(UserLoginRequest request);
+    Task<AuthResponse> LoginUserAsync(UserLoginRequest request);
     Task<UserDto> RegisterUserAsync(UserRegisterRequest request);
 }

@@ -1,6 +1,5 @@
 using BusinessLayer;
 using DataAccessLayer;
-using EMakler.PROAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,13 +20,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
 }
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 

@@ -19,8 +19,6 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
     {
         try
@@ -31,35 +29,33 @@ public class AuthController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning(ex, $"Registration validation failed for email: {request.Email}. Errors: {string.Join(", ", ex.Errors)}");
+            _logger.LogWarning(ex, $"Registration validation failed for contact number: {request.ContactNumber}. Errors: {string.Join(", ", ex.Errors)}");
             return BadRequest(ex.Errors);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Unexpected error during registration for email: {request.Email}");
+            _logger.LogError(ex, $"Unexpected error during registration for contact number: {request.ContactNumber}");
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
         }
     }
 
     [HttpPost("login")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
     {
         try
         {
             var token = await _authService.LoginUserAsync(request);
-            _logger.LogInformation($"Login successful for email: {request.Email}. Token generated.");
+            _logger.LogInformation($"Login successful for contact number: {request.ContactNumber}. Token generated.");
             return Ok(new { Token = token });
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, $"Login failed for email: {request.Email}");
+            _logger.LogWarning(ex, $"Login failed for contact number: {request.ContactNumber}");
             return Unauthorized("Invalid credentials");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Unexpected error during login for email: {request.Email}");
+            _logger.LogError(ex, $"Unexpected error during login for email: {request.ContactNumber}");
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
         }
     }

@@ -1,14 +1,15 @@
 ﻿using DTO.User;
+using EntityLayer.Entities;
 
 namespace BusinessLayer.Interfaces.UserServices;
 
 public interface IUserService
 {
-    Task<IEnumerable<UserDto>> GetAllUsersAsync();
-    Task<UserDto> GetUserByIdAsync(Guid userId);
-    Task<UserDto> GetUserByContactNumberAsync(string contactNumber);
-    Task<UserDto> GetUserByEmailAsync(string email);
-    Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
-    Task<UserDto> UpdateUserbyIdAsync(Guid userId, UpdateUserDto updateUserDto);
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<User> GetUserByIdAsync(Guid userId);
+    Task<User> GetUserByContactNumberAsync(string contactNumber);
+    Task<User> GetUserByEmailAsync(string email);
+    Task<User> CreateUserAsync(UserDto userDto);
+    Task<User> UpdateUserbyIdAsync(Guid userId, UserDto userDto);
     Task<bool> DeleteUserbyIdAsync(Guid userId);
 }

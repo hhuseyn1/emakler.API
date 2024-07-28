@@ -30,19 +30,19 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateUserAsync(User user)
+    public async Task UpdateUserByIdAsync(User user)
     {
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteUserAsync(User user)
+    public async Task DeleteUserByIdAsync(User user)
     {
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<User> GetByPredicateAsync(Expression<Func<User, bool>> predicate)
+    public async Task<User> GetUserByPredicateAsync(Expression<Func<User, bool>> predicate)
     {
         return await _context.Users.FirstOrDefaultAsync(predicate);
     }

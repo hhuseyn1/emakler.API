@@ -25,7 +25,6 @@ public class PostRepository : IPostRepository
     public async Task<IEnumerable<BuildingPost>> GetAllBuildingPostsAsync()
     {
         return await _context.BuildingPosts
-                             .Include(bp => bp.Building)
                              .ToListAsync();
     }
 
@@ -45,13 +44,13 @@ public class PostRepository : IPostRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateBuildingPostAsync(BuildingPost buildingPost)
+    public async Task UpdateBuildingPostByIdAsync(BuildingPost buildingPost)
     {
         _context.BuildingPosts.Update(buildingPost);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteBuildingPostAsync(BuildingPost buildingPost)
+    public async Task DeleteBuildingPostByIdAsync(BuildingPost buildingPost)
     {
         _context.BuildingPosts.Remove(buildingPost);
         await _context.SaveChangesAsync();

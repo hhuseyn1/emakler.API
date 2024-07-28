@@ -11,14 +11,20 @@ using BusinessLayer.Services.UserServices;
 using BusinessLayer.Interfaces.UserServices;
 using BusinessLayer.Services.PostServices;
 using BusinessLayer.Interfaces.PostServices;
-using BusinessLayer.Services.OtpService;
 using BusinessLayer.Interfaces.OtpService;
+using BusinessLayer.Exception;
+using BusinessLayer.Validators.Post;
+
+
 namespace BusinessLayer;
 
 public static class ServiceRegistration
 {
     public static IServiceCollection AddBLServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
         services.AddTransient<JWTService>();
@@ -29,9 +35,9 @@ public static class ServiceRegistration
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<IOtpService, OtpService>();
 
+        services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateBuildingPostDtoValidator>());
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UserRegisterRequestValidator>());
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserDtoValidator>());
-        services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UpdateUserDtoValidator>());
 
         services.AddAutoMapper(typeof(MappingProfile));
 

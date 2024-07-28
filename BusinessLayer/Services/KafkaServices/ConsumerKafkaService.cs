@@ -45,7 +45,7 @@ public class ConsumerKafkaService : IConsumerKafkaService
             consumer.Close();
             _logger.LogInformation("Consumer operation cancelled.");
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             _logger.LogError(ex, "An error occurred while consuming messages.");
         }

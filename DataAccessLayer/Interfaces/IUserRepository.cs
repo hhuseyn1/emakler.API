@@ -5,11 +5,11 @@ namespace DataAccessLayer.Interfaces;
 
 public interface IUserRepository
 {
-    Task<User> GetUserByIdAsync(Guid userId);
-    Task<User> GetByPredicateAsync(Expression<Func<User, bool>> predicate);
     Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<User> GetUserByIdAsync(Guid userId);
+    Task<User> GetUserByPredicateAsync(Expression<Func<User, bool>> predicate);
     Task AddUserAsync(User user);
-    Task UpdateUserAsync(User user);
-    Task DeleteUserAsync(User user);
+    Task UpdateUserByIdAsync(User user);
+    Task DeleteUserByIdAsync(User user);
 }
 

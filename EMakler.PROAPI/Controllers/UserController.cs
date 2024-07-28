@@ -1,33 +1,18 @@
-﻿using BusinessLayer.Exceptions;
-using BusinessLayer.Interfaces.UserServices;
+﻿using BusinessLayer.Interfaces.UserServices;
 using DTO.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EMakler.PROAPI.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+[ApiController]
+public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
 
-    public UsersController(IUserService userService)
+    public UserController(IUserService userService)
     {
         _userService = userService;
-    }
-
-    [HttpGet("GetUserbyId/{userId}")]
-    public async Task<IActionResult> GetUserbyId(Guid userId)
-    {
-        try
-        {
-            var user = await _userService.GetUserByIdAsync(userId);
-            return Ok(user);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
     }
 
     [HttpGet("GetAllUsers")]
@@ -37,41 +22,45 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+    [HttpGet("GetUserById/{id}")]
+    public async Task<IActionResult> GetUserById(Guid id)
+    {
+        var user = await _userService.GetUserByIdAsync(id);
+        return Ok(user);
+    }
+
+    [HttpGet("GetUserByContactNumber")]
+    public async Task<IActionResult> GetUserByContactNumber([FromQuery] string contactNumber)
+    {
+        var user = await _userService.GetUserByContactNumberAsync(contactNumber);
+        return Ok(user);
+    }
+
+    [HttpGet("GetUserByEmail")]
+    public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+    {
+        var user = await _userService.GetUserByEmailAsync(email);
+        return Ok(user);
+    }
+
     [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserDto)
+    public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
     {
-        var createdUser = await _userService.CreateUserAsync(createUserDto);
-        return CreatedAtAction(nameof(GetUserbyId), new { userId = createdUser.Id }, createdUser);
+        var createdUser = await _userService.CreateUserAsync(userDto);
+        return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
     }
 
-    [HttpPut("UpdateUserbyId/{userId}")]
-    public async Task<IActionResult> UpdateUserbyId(Guid userId, [FromBody] UpdateUserDto updateUserDto)
+    [HttpPut("UpdateUserById/{id}")]
+    public async Task<IActionResult> UpdateUserById(Guid id, [FromBody] UserDto userDto)
     {
-        if (userId != updateUserDto.Id)
-            return BadRequest("User ID mismatch.");
-
-        try
-        {
-            var updatedUser = await _userService.UpdateUserbyIdAsync(userId, updateUserDto);
-            return Ok(updatedUser);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        var updatedUser = await _userService.UpdateUserbyIdAsync(id, userDto);
+        return Ok(updatedUser);
     }
 
-    [HttpDelete("DeleteUserbyId/{userId}")]
-    public async Task<IActionResult> DeleteUserbyId(Guid userId)
+    [HttpDelete("DeleteUserById/{id}")]
+    public async Task<IActionResult> DeleteUserById(Guid id)
     {
-        try
-        {
-            await _userService.DeleteUserbyIdAsync(userId);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        await _userService.DeleteUserbyIdAsync(id);
+        return NoContent();
     }
 }

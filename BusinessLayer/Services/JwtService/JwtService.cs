@@ -22,39 +22,42 @@ public class JWTService
     {
         List<Claim> Claims = new()
         {
-            new Claim(ClaimTypes.Name, user.Email),
             new Claim(ClaimTypes.MobilePhone, user.ContactNumber)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
         var token = new JwtSecurityToken(
             claims: Claims,
             signingCredentials: creds,
-            expires: DateTime.Now.AddDays(_jwtSettings.ExpiryDay)
+            expires: DateTime.Now.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes)
             );
 
         var JWT = new JwtSecurityTokenHandler().WriteToken(token);
         return JWT;
     }
-    public (byte[] PasswordHash, byte[] PasswordSalt) CreatePasswordHash(string password)
+    public string GenerateRefreshToken()
     {
-        using (var hmac = new HMACSHA512())
-        {
-            var passwordSalt = hmac.Key;
-            var passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return (passwordHash, passwordSalt);
-        }
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
 
-    public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    public  string GenerateAccessTokenFromRefreshToken(string refreshToken, string secret)
     {
-        using (var hmac = new HMACSHA512(storedSalt))
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(secret);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return computedHash.SequenceEqual(storedHash);
-        }
+            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

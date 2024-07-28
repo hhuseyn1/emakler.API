@@ -1,78 +1,36 @@
-﻿using FirebaseAdmin.Messaging;
-using Microsoft.Extensions.Logging;
-using DataAccessLayer.Interfaces;
-using EntityLayer.Entities;
-using BusinessLayer.Interfaces.OtpService;
+﻿using BusinessLayer.Interfaces.OtpService;
+using Twilio.Rest.Verify.V2.Service;
+using Twilio;
+using Microsoft.Extensions.Options;
+using BusinessLayer.Configurations;
 
 public class OtpService : IOtpService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly FirebaseMessaging _messaging;
-    private readonly ILogger<OtpService> _logger;
+    private readonly TwilioSettings _twilioSettings;
 
-    public OtpService(IUserRepository userRepository, ILogger<OtpService> logger)
+    public OtpService(IOptions<TwilioSettings> twilioSettings)
     {
-        _userRepository = userRepository;
-        _messaging = FirebaseMessaging.DefaultInstance;
-        _logger = logger;
+        _twilioSettings = twilioSettings?.Value ?? throw new ArgumentNullException(nameof(twilioSettings));
+        TwilioClient.Init(_twilioSettings.AccountSid, _twilioSettings.AuthToken);
     }
 
-    public async Task<string> SendOtpAsync(string phoneNumber)
+    public async Task SendOtpAsync(string phoneNumber)
     {
-        var otpCode = new Random().Next(100000, 999999).ToString();
-        var user = await _userRepository.GetByPredicateAsync(u => u.ContactNumber == phoneNumber);
-
-        if (user == null)
-        {
-            user = new User
-            {
-                Id = Guid.NewGuid(),
-                ContactNumber = phoneNumber,
-                OtpCode = otpCode,
-                OtpExpiryTime = DateTime.UtcNow.AddMinutes(5)
-            };
-            await _userRepository.AddUserAsync(user);
-        }
-        else
-        {
-            user.OtpCode = otpCode;
-            user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(5);
-            await _userRepository.UpdateUserAsync(user);
-        }
-
-        var message = new Message()
-        {
-            Data = new Dictionary<string, string>()
-            {
-                { "otp", otpCode }
-            },
-            Token = phoneNumber,
-            Notification = new Notification
-            {
-                Title = "Your OTP Code",
-                Body = $"Your OTP code is {otpCode}"
-            }
-        };
-
-        await _messaging.SendAsync(message);
-        _logger.LogInformation($"OTP generated and sent to phone number: {phoneNumber}");
-
-        return otpCode;
+        var verification = await VerificationResource.CreateAsync(
+            to: phoneNumber,
+            channel: "sms",
+            pathServiceSid: _twilioSettings.TwilioServiceSid
+        );
     }
 
-    public async Task<bool> VerifyOtpAsync(string phoneNumber, string otpCode)
+    public async Task<bool> VerifyOtpAsync(string phoneNumber, string otp)
     {
-        var user = await _userRepository.GetByPredicateAsync(u=>u.ContactNumber == phoneNumber);
+        var verificationCheck = await VerificationCheckResource.CreateAsync(
+            to: phoneNumber,
+            code: otp,
+            pathServiceSid: _twilioSettings.TwilioServiceSid
+        );
 
-        if (user == null || user.OtpCode != otpCode || user.OtpExpiryTime < DateTime.UtcNow)
-        {
-            return false;
-        }
-
-        user.OtpCode = null;
-        user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(-1);
-        await _userRepository.UpdateUserAsync(user);
-
-        return true;
+        return verificationCheck.Status == "approved";
     }
 }

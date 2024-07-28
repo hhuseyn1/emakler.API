@@ -2,6 +2,7 @@
 
 public class JwtSettings
 {
-    public string Secret { get; set; }
-    public int ExpiryDay { get; set; }
+    public string SecretKey { get; set; }
+    public int AccessTokenExpirationMinutes { get; set; }
+    public int RefreshTokenExpirationMonths { get; set; }
 }

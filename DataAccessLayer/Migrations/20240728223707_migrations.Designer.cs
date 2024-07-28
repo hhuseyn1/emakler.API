@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240720125218_UpdatePrimaryKeysToGuid")]
-    partial class UpdatePrimaryKeysToGuid
+    [Migration("20240728223707_migrations")]
+    partial class migrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -84,11 +84,23 @@ namespace DataAccessLayer.Migrations
                     b.Property<Guid>("BuildingId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ImageUrls")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -501,14 +513,12 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsValidate")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OtpCode")
+                    b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("OtpCreatedTime")
-                        .HasColumnType("datetime2");
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
@@ -520,10 +530,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("UserMail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

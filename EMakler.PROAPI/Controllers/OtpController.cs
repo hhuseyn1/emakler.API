@@ -17,23 +17,23 @@ public class OtpController : ControllerBase
         _otpService = otpService;
     }
 
-    [HttpPost("send")]
-    public async Task<IActionResult> SendOtp([FromBody] string phoneNumber)
-    {
-        var otp = await _otpService.SendOtpAsync(phoneNumber);
-        return Ok(new { OtpSent = true });
-    }
+    //[HttpPost("send")]
+    //public async Task<IActionResult> SendOtp([FromBody] string phoneNumber)
+    //{
+    //    var otp = await _otpService.SendOtpAsync(phoneNumber);
+    //    return Ok(new { OtpSent = true });
+    //}
 
-    [HttpPost("verify")]
-    public async Task<IActionResult> VerifyOtp([FromBody] OtpVerificationRequest request)
-    {
-        var isValid = await _otpService.VerifyOtpAsync(request.ContactNumber, request.OtpCode);
+    //[HttpPost("verify")]
+    //public async Task<IActionResult> VerifyOtp([FromBody] OtpVerificationRequest request)
+    //{
+    //    var isValid = await _otpService.VerifyOtpAsync(request.ContactNumber, request.OtpCode);
 
-        if (!isValid)
-        {
-            return BadRequest("Invalid OTP");
-        }
+    //    if (!isValid)
+    //    {
+    //        return BadRequest("Invalid OTP");
+    //    }
 
-        return Ok("OTP verified successfully");
-    }
+    //    return Ok("OTP verified successfully");
+    //}
 }

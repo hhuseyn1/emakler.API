@@ -1,138 +1,147 @@
 ﻿using AutoMapper;
-using BusinessLayer.Exceptions;
 using BusinessLayer.Interfaces.PostServices;
 using DataAccessLayer.Interfaces;
 using DTO.BuildingPost;
 using EntityLayer.Entities;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
+using Serilog;
+using System.Linq.Expressions;
 
 namespace BusinessLayer.Services.PostServices;
 
 public class PostService : IPostService
 {
-    private readonly IPostRepository _buildingPostRepository;
+    private readonly IPostRepository _postRepository;
     private readonly IMapper _mapper;
-    private readonly IValidator<CreateBuildingPostDto> _createBuildingPostValidator;
-    private readonly IValidator<UpdateBuildingPostDto> _updateBuildingPostValidator;
-    private readonly ILogger<PostService> _logger;
-    private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly IValidator<BuildingPostDto> _createBuildingPostValidator;
 
-    public PostService(
-        IPostRepository buildingPostRepository,
-        IMapper mapper,
-        IValidator<CreateBuildingPostDto> createBuildingPostValidator,
-        IValidator<UpdateBuildingPostDto> updateBuildingPostValidator,
-        ILogger<PostService> logger,
-        IWebHostEnvironment hostingEnvironment)
+    public PostService(IPostRepository postRepository, IMapper mapper,
+                       IValidator<BuildingPostDto> createBuildingPostValidator)
     {
-        _buildingPostRepository = buildingPostRepository;
+        _postRepository = postRepository;
         _mapper = mapper;
         _createBuildingPostValidator = createBuildingPostValidator;
-        _updateBuildingPostValidator = updateBuildingPostValidator;
-        _logger = logger;
-        _hostingEnvironment = hostingEnvironment;
     }
 
-    public async Task<BuildingPostDto> GetBuildingPostByIdAsync(Guid id)
+    public async Task<BuildingPost> GetBuildingPostByIdAsync(Guid id)
     {
-        var buildingPost = await _buildingPostRepository.GetBuildingPostByIdAsync(id);
-        if (buildingPost == null)
-            throw new NotFoundException("BuildingPost not found.");
-
-        return _mapper.Map<BuildingPostDto>(buildingPost);
-    }
-
-    public async Task<IEnumerable<BuildingPostDto>> GetAllBuildingPostsAsync()
-    {
-        var buildingPosts = await _buildingPostRepository.GetAllBuildingPostsAsync();
-        return _mapper.Map<IEnumerable<BuildingPostDto>>(buildingPosts);
-    }
-
-    public async Task<IEnumerable<BuildingPostDto>> GetBuildingPostsByFilterAsync(Expression<Func<BuildingPostDto, bool>> filter, int pageNumber, int pageSize)
-    {
-        var predicate = _mapper.Map<Expression<Func<BuildingPost, bool>>>(filter);
-        var buildingPosts = await _buildingPostRepository.GetBuildingPostsByFilterAsync(predicate, pageNumber, pageSize);
-        return _mapper.Map<IEnumerable<BuildingPostDto>>(buildingPosts);
-    }
-
-    public async Task<BuildingPostDto> CreateBuildingPostAsync(CreateBuildingPostDto createBuildingPostDto, IList<IFormFile> images)
-    {
-        var validationResult = await _createBuildingPostValidator.ValidateAsync(createBuildingPostDto);
-        if (!validationResult.IsValid)
+        try
         {
-            _logger.LogWarning($"CreateBuildingPost validation failed: {string.Join(", ", validationResult.Errors)}");
-            throw new ValidationException(validationResult.Errors);
-        }
-
-        if (images.Any(img => img != null && !IsImageFile(img)))
-        {
-            _logger.LogWarning("Invalid file type. Only image files are allowed.");
-            throw new ValidationException("Invalid file type. Only image files are allowed.");
-        }
-
-        var buildingPost = _mapper.Map<BuildingPost>(createBuildingPostDto);
-        buildingPost.Id = Guid.NewGuid();
-
-        if (images != null && images.Count > 0)
-        {
-            var imagePaths = new List<string>();
-            foreach (var image in images)
+            var post = await _postRepository.GetBuildingPostByIdAsync(id);
+            if (post == null)
             {
-                var filePath = Path.Combine("uploads", buildingPost.Id.ToString(), image.FileName);
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
-                imagePaths.Add(filePath);
+                Log.Warning($"Building post with ID: {id} not found");
+                throw new ArgumentException("Building post not found.");
             }
-            buildingPost.ImagePaths = imagePaths;
+
+            Log.Information($"Building post retrieved with ID: {id}");
+            return post;
         }
-
-        await _buildingPostRepository.AddBuildingPostAsync(buildingPost);
-
-        return _mapper.Map<BuildingPostDto>(buildingPost);
-    }
-
-    public async Task<BuildingPostDto> UpdateBuildingPostAsync(Guid id, UpdateBuildingPostDto updateBuildingPostDto)
-    {
-        var validationResult = await _updateBuildingPostValidator.ValidateAsync(updateBuildingPostDto);
-        if (!validationResult.IsValid)
+        catch (System.Exception ex)
         {
-            _logger.LogWarning($"UpdateBuildingPost validation failed: {string.Join(", ", validationResult.Errors)}");
-            throw new ValidationException(validationResult.Errors);
+            Log.Error(ex, $"An error occurred while retrieving building post by ID: {id}");
+            throw;
         }
-
-        var buildingPost = await _buildingPostRepository.GetBuildingPostByIdAsync(id);
-        if (buildingPost == null)
-            throw new NotFoundException("BuildingPost not found.");
-
-        _mapper.Map(updateBuildingPostDto, buildingPost);
-        await _buildingPostRepository.UpdateBuildingPostAsync(buildingPost);
-
-        return _mapper.Map<BuildingPostDto>(buildingPost);
     }
 
-    public async Task<bool> DeleteBuildingPostAsync(Guid id)
+    public async Task<IEnumerable<BuildingPost>> GetAllBuildingPostsAsync()
     {
-        var buildingPost = await _buildingPostRepository.GetBuildingPostByIdAsync(id);
-        if (buildingPost == null)
-            throw new NotFoundException("BuildingPost not found.");
-
-        await _buildingPostRepository.DeleteBuildingPostAsync(buildingPost);
-        return true;
+        try
+        {
+            var posts = await _postRepository.GetAllBuildingPostsAsync();
+            Log.Information($"Retrieved {posts.Count()} building posts");
+            return posts;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, "An error occurred while retrieving all building posts");
+            throw;
+        }
     }
 
-    private bool IsImageFile(IFormFile file)
+    public async Task<IEnumerable<BuildingPost>> GetBuildingPostsByFilterAsync(Expression<Func<BuildingPostDto, bool>> filter, int pageNumber, int pageSize)
     {
-        var validImageMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/svg+xml" };
-        var validImageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg" };
+        try
+        {
+            var predicate = _mapper.Map<Expression<Func<BuildingPost, bool>>>(filter);
+            var posts = await _postRepository.GetBuildingPostsByFilterAsync(predicate, pageNumber, pageSize);
+            Log.Information($"Retrieved {posts.Count()} building posts with specified filter");
+            return posts;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, "An error occurred while retrieving building posts by filter");
+            throw;
+        }
+    }
 
-        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        return validImageMimeTypes.Contains(file.ContentType) && validImageExtensions.Contains(fileExtension);
+    public async Task<BuildingPost> CreateBuildingPostAsync(BuildingPostDto buildingPostDto, IList<IFormFile> files)
+    {
+        try
+        {
+            var validationResult = await _createBuildingPostValidator.ValidateAsync(buildingPostDto);
+            if (!validationResult.IsValid)
+            {
+                Log.Warning($"CreateBuildingPostAsync validation failed: {string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))}");
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            var post = _mapper.Map<BuildingPost>(buildingPostDto);
+            post.ImageUrls = files.Select(file => file.Name).ToList(); 
+            await _postRepository.AddBuildingPostAsync(post);
+            Log.Information($"Building post created successfully with ID: {post.Id}");
+            return post;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, "An error occurred while creating a building post");
+            throw;
+        }
+    }
+
+    public async Task<BuildingPost> UpdateBuildingPostByIdAsync(Guid id, BuildingPostDto buildingPostDto)
+    {
+        try
+        {
+            var post = await _postRepository.GetBuildingPostByIdAsync(id);
+            if (post == null)
+            {
+                Log.Warning($"Building post with ID: {id} not found");
+                throw new ArgumentException("Building post not found.");
+            }
+
+            _mapper.Map(buildingPostDto, post);
+            await _postRepository.UpdateBuildingPostByIdAsync(post);
+            Log.Information($"Building post updated successfully with ID: {id}");
+            return post;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, $"An error occurred while updating building post with ID: {id}");
+            throw;
+        }
+    }
+
+    public async Task<bool> DeleteBuildingPostByIdAsync(Guid id)
+    {
+        try
+        {
+            var post = await _postRepository.GetBuildingPostByIdAsync(id);
+            if (post == null)
+            {
+                Log.Warning($"Building post with ID: {id} not found");
+                throw new ArgumentException("Building post not found.");
+            }
+
+            await _postRepository.DeleteBuildingPostByIdAsync(post);
+            Log.Information($"Building post deleted successfully with ID: {id}");
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, $"An error occurred while deleting building post with ID: {id}");
+            throw;
+        }
     }
 }
