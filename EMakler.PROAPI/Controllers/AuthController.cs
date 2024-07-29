@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BusinessLayer.Interfaces.AuthService;
+﻿using BusinessLayer.Interfaces.AuthService;
 using DTO.Auth;
-using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace EMakler.PROAPI.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
+[ApiController]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -20,42 +19,60 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         try
         {
-            var userDto = await _authService.RegisterUserAsync(request);
-            Log.Information($"User registered successfully: {userDto}");
-            return Ok(userDto);
-        }
-        catch (ValidationException ex)
-        {
-            Log.Warning(ex, $"Registration validation failed for contact number: {request.ContactNumber}. Errors: {string.Join(", ", ex.Errors)}");
-            return BadRequest(ex.Errors);
+            var user = await _authService.RegisterUserAsync(request);
+            return Ok(user);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, $"Unexpected error during registration for contact number: {request.ContactNumber}");
-            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            Log.Error(ex, "Error occurred during registration.");
+            return BadRequest(ex.Message);
         }
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         try
         {
             var authResponse = await _authService.LoginUserAsync(request);
-            Log.Information($"Login successful for contact number: {request.ContactNumber}. Token generated.");
             return Ok(authResponse);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            Log.Warning(ex, $"Login failed for contact number: {request.ContactNumber}");
-            return Unauthorized("Invalid credentials");
         }
         catch (Exception ex)
         {
-            Log.Error(ex, $"Unexpected error during login for email: {request.ContactNumber}");
-            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            Log.Error(ex, "Error occurred during login.");
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return BadRequest("Refresh token is required.");
+        }
+
+        try
+        {
+            var newAccessToken = await _authService.RefreshTokenAsync(refreshToken);
+            return Ok(new { AccessToken = newAccessToken });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error occurred during token refresh.");
+            return BadRequest(ex.Message);
         }
     }
 }
