@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.AuthService;
 using DTO.Auth;
 using FluentValidation;
+using Serilog;
 
 namespace EMakler.PROAPI.Controllers;
 
@@ -10,12 +11,10 @@ namespace EMakler.PROAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
-        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -24,17 +23,17 @@ public class AuthController : ControllerBase
         try
         {
             var userDto = await _authService.RegisterUserAsync(request);
-            _logger.LogInformation($"User registered successfully: {userDto}");
+            Log.Information($"User registered successfully: {userDto}");
             return Ok(userDto);
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning(ex, $"Registration validation failed for contact number: {request.ContactNumber}. Errors: {string.Join(", ", ex.Errors)}");
+            Log.Warning(ex, $"Registration validation failed for contact number: {request.ContactNumber}. Errors: {string.Join(", ", ex.Errors)}");
             return BadRequest(ex.Errors);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Unexpected error during registration for contact number: {request.ContactNumber}");
+            Log.Error(ex, $"Unexpected error during registration for contact number: {request.ContactNumber}");
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
         }
     }
@@ -44,18 +43,18 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var token = await _authService.LoginUserAsync(request);
-            _logger.LogInformation($"Login successful for contact number: {request.ContactNumber}. Token generated.");
-            return Ok(new { Token = token });
+            var authResponse = await _authService.LoginUserAsync(request);
+            Log.Information($"Login successful for contact number: {request.ContactNumber}. Token generated.");
+            return Ok(authResponse);
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, $"Login failed for contact number: {request.ContactNumber}");
+            Log.Warning(ex, $"Login failed for contact number: {request.ContactNumber}");
             return Unauthorized("Invalid credentials");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Unexpected error during login for email: {request.ContactNumber}");
+            Log.Error(ex, $"Unexpected error during login for email: {request.ContactNumber}");
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
         }
     }

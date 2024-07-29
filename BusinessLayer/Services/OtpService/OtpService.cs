@@ -3,6 +3,9 @@ using Twilio.Rest.Verify.V2.Service;
 using Twilio;
 using Microsoft.Extensions.Options;
 using BusinessLayer.Configurations;
+using Serilog;
+
+namespace BusinessLayer.Services.OtpService;
 
 public class OtpService : IOtpService
 {
@@ -16,21 +19,42 @@ public class OtpService : IOtpService
 
     public async Task SendOtpAsync(string phoneNumber)
     {
-        var verification = await VerificationResource.CreateAsync(
-            to: phoneNumber,
-            channel: "sms",
-            pathServiceSid: _twilioSettings.TwilioServiceSid
-        );
+        try
+        {
+            var verification = await VerificationResource.CreateAsync(
+                to: phoneNumber,
+                channel: "sms",
+                pathServiceSid: _twilioSettings.TwilioServiceSid
+            );
+
+            Log.Information($"OTP sent to {phoneNumber} via SMS.");
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, $"Error sending OTP to {phoneNumber}.");
+            throw;
+        }
     }
 
     public async Task<bool> VerifyOtpAsync(string phoneNumber, string otp)
     {
-        var verificationCheck = await VerificationCheckResource.CreateAsync(
-            to: phoneNumber,
-            code: otp,
-            pathServiceSid: _twilioSettings.TwilioServiceSid
-        );
+        try
+        {
+            var verificationCheck = await VerificationCheckResource.CreateAsync(
+                to: phoneNumber,
+                code: otp,
+                pathServiceSid: _twilioSettings.TwilioServiceSid
+            );
 
-        return verificationCheck.Status == "approved";
+            var isApproved = verificationCheck.Status == "approved";
+            Log.Information($"OTP verification for {phoneNumber} {(isApproved ? "approved" : "failed")}.");
+
+            return isApproved;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, $"Error verifying OTP for {phoneNumber}.");
+            throw;
+        }
     }
 }
