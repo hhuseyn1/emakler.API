@@ -25,6 +25,7 @@ public class PostRepository : IPostRepository
     public async Task<IEnumerable<BuildingPost>> GetAllBuildingPostsAsync()
     {
         return await _context.BuildingPosts
+                             .Include(bp => bp.Building)
                              .ToListAsync();
     }
 

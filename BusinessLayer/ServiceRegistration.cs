@@ -14,6 +14,7 @@ using BusinessLayer.Interfaces.PostServices;
 using BusinessLayer.Interfaces.OtpService;
 using BusinessLayer.Exception;
 using BusinessLayer.Validators.Post;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 namespace BusinessLayer;
@@ -38,6 +39,12 @@ public static class ServiceRegistration
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateBuildingPostDtoValidator>());
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<UserRegisterRequestValidator>());
         services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserDtoValidator>());
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        });
 
         services.AddAutoMapper(typeof(MappingProfile));
 

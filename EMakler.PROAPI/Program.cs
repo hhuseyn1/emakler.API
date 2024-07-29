@@ -1,15 +1,33 @@
 using BusinessLayer;
 using DataAccessLayer;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .CreateLogger();
 
 builder.Services.AddDALServices(builder.Configuration);
-builder.Services.AddBLServices(builder.Configuration); 
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Auth",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
+});
+
+builder.Services.AddBLServices(builder.Configuration);
 
 
 var app = builder.Build();

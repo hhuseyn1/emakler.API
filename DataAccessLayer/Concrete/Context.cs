@@ -33,8 +33,17 @@ public partial class Context : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
-        modelBuilder.Entity<Building>()
-                .HasKey(b => b.Id);
+        modelBuilder.Entity<Building>(entity =>
+        {
+            entity.Property(e => e.Area)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.HasKey(b => b.Id);
+        });
+
 
         modelBuilder.Entity<BuildingPost>()
                 .HasKey(bp => bp.Id);

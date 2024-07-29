@@ -6,5 +6,5 @@ public class BuildingPost : BaseEntity
     public string Content { get; set; }
     public Building Building { get; set; }  
     public bool IsActive { get; set; } = true;
-    public IEnumerable<string> ImageUrls { get; set; }
+    public IList<string> ImageUrls { get; set; }
 }

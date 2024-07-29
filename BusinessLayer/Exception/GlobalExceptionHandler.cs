@@ -15,16 +15,27 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         Log.Error(exception, exception.Message);
 
+        var status = exception switch
+        {
+
+            ArgumentNullException => HttpStatusCode.NotFound,
+            InvalidOperationException => HttpStatusCode.BadRequest,
+            UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+            Microsoft.IdentityModel.Tokens.SecurityTokenException => HttpStatusCode.Unauthorized,
+            _ => HttpStatusCode.InternalServerError
+        };
+
         var details = new ProblemDetails()
         {
             Detail = "API Error",
             Instance = "API",
-            Status = (int)HttpStatusCode.InternalServerError,
+            Status = (int)status,
             Title = "Error",
-            Type = "Server Error"
+            Type = "eMaklerPro Server Error"
         };
 
         var response = JsonSerializer.Serialize(details);
+        httpContext.Response.StatusCode = (int)status;
         httpContext.Response.ContentType = "application/json";
 
         await httpContext.Response.WriteAsync(response, cancellationToken);

@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces.UserServices;
 using DTO.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EMakler.PROAPI.Controllers;
@@ -43,6 +44,8 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
+
+    [Authorize]
     [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
     {
@@ -57,6 +60,7 @@ public class UserController : ControllerBase
         return Ok(updatedUser);
     }
 
+    [Authorize]
     [HttpDelete("DeleteUserById/{id}")]
     public async Task<IActionResult> DeleteUserById(Guid id)
     {
