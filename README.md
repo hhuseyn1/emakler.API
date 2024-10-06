@@ -1,6 +1,3 @@
-Certainly! Below is a README template tailored for your Emakler API project on GitHub:
-
----
 
 # Emakler API
 
